@@ -75,6 +75,8 @@ def parser() -> argparse.ArgumentParser:
     monitor.add_argument("--no-privacy", action="store_true", help="Desactivar el modo privacidad (silencio nocturno).")
     monitor.add_argument("--privacy-start", default=MonitorConfig.privacy_start, metavar="HH:MM")
     monitor.add_argument("--privacy-end", default=MonitorConfig.privacy_end, metavar="HH:MM")
+    monitor.add_argument("--server", metavar="URL", help="Servidor ProxiSense (AWS) al que enviar eventos y estado. Tambien PROXISENSE_SERVER_URL en .env.")
+    monitor.add_argument("--device", metavar="NOMBRE", help="Nombre de este dispositivo en el panel (por defecto, el nombre del equipo).")
     return command
 
 
@@ -146,6 +148,7 @@ def main(argv: list[str] | None = None) -> None:
             print(f"Registro terminado. Lecturas guardadas: {total}. Archivo: {args.output}")
         elif args.action == "monitor":
             from .monitor import TelegramNotifier, run_monitor
+            from .reporter import Reporter
             config = MonitorConfig(distance_mm=args.distance, confirm_seconds=args.confirm, privacy_enabled=not args.no_privacy,
                                    privacy_start=args.privacy_start, privacy_end=args.privacy_end)
             notifier = TelegramNotifier()
@@ -153,7 +156,12 @@ def main(argv: list[str] | None = None) -> None:
                 logging.warning("Telegram sin configurar: copia .env.example a .env y completa TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID.")
             baseline = _resolve_baseline(args)
             logging.info("Monitor iniciado: alerta a %.0f mm sostenidos %.1f s.", config.distance_mm, config.confirm_seconds)
-            run_monitor(_source_factory(args, 1.0), config, baseline, notifier)
+            reporter = Reporter.from_env(args.server, args.device)
+            if reporter is not None:
+                logging.info("Enviando estado y eventos a %s como '%s'.", reporter.url, reporter.device)
+            run_monitor(_source_factory(args, 1.0), config, baseline, notifier, reporter)
+            if reporter is not None:
+                time.sleep(1.0)   # deja salir los ultimos eventos antes de cerrar
         else:  # stream
             with _source_factory(args, 0.2)() as sensor:
                 for index, line in zip(range(args.count), sensor.lines()):

@@ -1,0 +1,17 @@
+[Unit]
+Description=ProxiSense (servidor del panel)
+After=network.target
+
+[Service]
+# Usuario temporal sin privilegios; systemd crea /var/lib/proxisense para la base de datos.
+DynamicUser=yes
+StateDirectory=proxisense
+EnvironmentFile=/etc/proxisense.env
+Environment=PROXISENSE_DB=/var/lib/proxisense/proxisense.db
+WorkingDirectory=/opt/proxisense/server
+ExecStart=/opt/proxisense/.venv/bin/uvicorn app:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

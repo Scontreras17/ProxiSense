@@ -16,8 +16,10 @@ src/test_radar/       # todo el codigo (comando `test-radar`)
   visualization.py    #   radar polar + mapa de calor 8x8
   recorder.py         #   registro y lectura de CSV
   monitor.py          #   presencia + alertas de Telegram
+  reporter.py         #   envia estado y eventos al servidor de AWS
   config.py           #   parametros y carga del .env
   cli.py              #   punto de entrada
+server/               # servidor + panel web para AWS (ver server/README.md)
 data/                 # CSV y baseline.json; habitacion_vacia.csv queda como referencia
 legacy/               # scripts originales v1.0, intactos (Radar.py, proxisense.py, Main.py, ...)
 .env.example          # plantilla de credenciales
@@ -86,6 +88,10 @@ test-radar monitor --replay data/habitacion_vacia.csv --once --speed 4
 - Entre 22:00 y 08:00 Telegram queda silenciado (`--privacy-start`, `--privacy-end`, `--no-privacy`).
 - Si se desconecta el cable USB, registra el error y reintenta cada cinco segundos.
 - El token de Telegram nunca aparece en los registros de error.
+
+### Panel web en AWS (opcional)
+
+La carpeta `server/` contiene un servidor y un panel web (estado del sensor, mapa de calor, alertas y actividad de 24 h). Se instala en tu instancia Ubuntu siguiendo `server/README.md`. El monitor le envía los datos si defines `PROXISENSE_SERVER_URL` y `PROXISENSE_API_KEY` en el `.env`, o con `--server URL --device NOMBRE`. Si AWS no responde, el monitor y las alertas de Telegram siguen funcionando.
 
 ## Formatos de datos
 

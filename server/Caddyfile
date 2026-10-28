@@ -1,0 +1,4 @@
+# Reemplaza por tu dominio (por ejemplo, tunombre.duckdns.org). Caddy consigue y renueva el HTTPS solo.
+tu-dominio.duckdns.org {
+    reverse_proxy 127.0.0.1:8000
+}

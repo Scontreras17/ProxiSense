@@ -20,6 +20,7 @@ import serial
 
 from .baseline import Baseline
 from .config import MonitorConfig
+from .reporter import Reporter
 from .sensor import parse_row
 
 
@@ -96,40 +97,48 @@ class TelegramNotifier:
 
 
 def process_stream(lines: Iterable[str], state: DetectionState, config: MonitorConfig,
-                   baseline: Baseline | None, notifier: TelegramNotifier) -> None:
+                   baseline: Baseline | None, notifier: TelegramNotifier, reporter: Reporter | None = None) -> None:
     matrix = np.full((8, 8), 4000.0)
     for line in lines:
         parsed = parse_row(line)
+        frame = None
         if parsed is not None:           # trama 8x8: fila yN
             row, values = parsed
             matrix[row] = values
+            frame = matrix
             visible = (matrix > 0) & (matrix < 4000)
             if baseline is not None:
                 visible &= baseline.foreground(matrix)
             valid = matrix[visible].tolist()
         else:                            # una distancia por linea
             valid = [v for v in parse_distances(line) if 0 < v < 10000]
+        nearest = min(valid) if valid else None
+        if reporter is not None:
+            reporter.heartbeat(frame, nearest, sum(1 for v in valid if v <= config.distance_mm))
         if not valid:                    # nada nuevo a la vista: rearma el detector si corresponde
             state.update(False, time.monotonic())
             continue
-        nearest = min(valid)
         if state.update(nearest <= config.distance_mm, time.monotonic()):
             if privacy_active(config):
                 logging.info("Presencia a %.0f mm; alerta silenciada por privacidad.", nearest)
+                if reporter is not None:
+                    reporter.event("presence", nearest, silenced=True, message="Silenciada por modo privacidad")
             else:
                 logging.warning("Presencia confirmada a %.0f mm.", nearest)
-                notifier.send(nearest)
+                sent = notifier.send(nearest)
+                if reporter is not None:
+                    reporter.event("alert", nearest, message="Aviso enviado a Telegram" if sent else "Telegram no disponible o sin configurar")
 
 
 def run_monitor(open_source: Callable[[], object], config: MonitorConfig,
-                baseline: Baseline | None, notifier: TelegramNotifier) -> None:
+                baseline: Baseline | None, notifier: TelegramNotifier, reporter: Reporter | None = None) -> None:
     """Servicio de fondo con reconexion ante una desconexion USB."""
     state = DetectionState(config.confirm_seconds)
     while True:
         try:
             with open_source() as source:
                 logging.info("Sensor conectado.")
-                process_stream(source.lines(), state, config, baseline, notifier)
+                process_stream(source.lines(), state, config, baseline, notifier, reporter)
             logging.info("La fuente de datos termino.")
             return
         except serial.SerialException as error:
