@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+mediciones_lidar.csv
+data/*.csv
+!data/.gitkeep
+!data/habitacion_vacia.csv
+
+# Credenciales locales
+.env
