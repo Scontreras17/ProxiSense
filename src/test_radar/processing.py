@@ -51,7 +51,8 @@ def detect_objects(matrix: np.ndarray, stable: np.ndarray, angle_degrees: float,
             visited[row, column] = True
             while pending:
                 current_row, current_column = pending.pop()
-                for next_row, next_column in ((current_row - 1, current_column), (current_row + 1, current_column), (current_row, current_column - 1), (current_row, current_column + 1)):
+                radius = config.link_radius_cells
+                for next_row, next_column in ((current_row + dr, current_column + dc) for dr in range(-radius, radius + 1) for dc in range(-radius, radius + 1) if dr or dc):
                     if not (0 <= next_row < 8 and 0 <= next_column < 8):
                         continue
                     if visited[next_row, next_column] or not valid[next_row, next_column]:
@@ -60,6 +61,8 @@ def detect_objects(matrix: np.ndarray, stable: np.ndarray, angle_degrees: float,
                         visited[next_row, next_column] = True
                         pending.append((next_row, next_column))
                         group.append((next_row, next_column))
+            if len(group) < config.minimum_group_cells:
+                continue
             columns = [item[1] for item in group]
             distances = [matrix[item[0], item[1]] for item in group]
             object_angle = angle_degrees + (float(np.mean(columns)) - 3.5) * (60 / 8)

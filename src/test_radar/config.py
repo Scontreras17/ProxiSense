@@ -24,6 +24,8 @@ class RadarConfig:
     max_distance_mm: int = 2000
     object_threshold_mm: int = 800
     group_distance_delta_mm: int = 250
+    link_radius_cells: int = 2        # une celdas separadas por huecos de hasta (radio-1) celdas sin lectura; 1 = solo vecinas
+    minimum_group_cells: int = 2      # grupos con menos celdas se descartan como ruido; 1 = comportamiento v1.0
     history_frames: int = 3
     minimum_stable_frames: int = 2
     confirmations_needed: int = 2
