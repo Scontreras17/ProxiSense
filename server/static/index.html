@@ -3,197 +3,134 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ProxiSense</title>
+<title>ProxiSense | Spatial Monitor</title>
 <meta name="color-scheme" content="dark">
 <style>
-  :root {
-    --bg: #050a08; --panel: #0b1410; --line: #1b4a30; --text: #b8ffc9; --muted: #6f9a80;
-    --accent: #42ff83; --danger: #ff5a5a; --warn: #ffb020; --cell-off: #0b1410;
-    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 var(--sans); }
-  main { max-width: 1100px; margin: 0 auto; padding: 16px; }
-  header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  h1 { margin: 0; font: 700 20px var(--mono); letter-spacing: .12em; color: var(--accent); }
-  h2 { margin: 0 0 12px; font: 600 13px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-  .grid { display: grid; gap: 16px; }
-  .cards { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
-  .two { grid-template-columns: 1fr; margin-bottom: 16px; }
-  @media (min-width: 860px) { .two { grid-template-columns: 1fr 1fr; } }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
-  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 99px; font: 600 12px var(--mono); border: 1px solid currentColor; }
-  .pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-  .on { color: var(--accent); } .off { color: var(--warn); } .bad { color: var(--danger); }
-  .card h3 { margin: 0 0 4px; font: 700 17px var(--mono); overflow-wrap: anywhere; }
-  .card dl { margin: 12px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; }
-  .card dt { color: var(--muted); } .card dd { margin: 0; font-family: var(--mono); text-align: right; white-space: nowrap; }
-  .heat { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; max-width: 460px; margin: 0 auto; }
-  .cell { aspect-ratio: 1; display: grid; place-items: center; border-radius: 4px; font: 600 clamp(9px, 2.2vw, 12px) var(--mono); color: #04110a; background: var(--cell-off); }
-  .cell.none { color: #2d4a3a; }
-  .cell.near { outline: 2px solid var(--danger); outline-offset: -2px; }
-  .legend { display: flex; align-items: center; gap: 8px; margin: 12px auto 0; max-width: 460px; font: 12px var(--mono); color: var(--muted); }
-  .legend i { flex: 1; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #f5e663, #3dbb7a 50%, #46327e); }
-  select { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; font: 13px var(--mono); margin-bottom: 12px; }
-  .empty { color: var(--muted); padding: 8px 0; }
-  svg { width: 100%; height: auto; display: block; }
-  svg text { fill: var(--muted); font: 10px var(--mono); }
-  .wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  th { color: var(--muted); font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .06em; }
-  td.num { font-family: var(--mono); text-align: right; } td.msg { white-space: normal; min-width: 160px; color: var(--muted); }
-  .badge { font: 700 11px var(--mono); padding: 2px 8px; border-radius: 4px; }
-  .badge.alert { background: #3a1212; color: var(--danger); } .badge.presence { background: #3a2a08; color: var(--warn); } .badge.info { background: #11261a; color: var(--accent); }
-  @media (max-width: 600px) {
-    main { padding: 12px; } .panel { padding: 12px; }
-    .card h3 { font-size: 15px; } .card dl { font-size: 13px; }
-    thead { display: none; } table, tbody { display: block; }
-    tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-bottom: 1px solid var(--line); }
-    td { border: 0; padding: 0; white-space: normal; }
-    td:nth-child(1) { grid-column: 1; grid-row: 1; } td:nth-child(3) { grid-column: 2; grid-row: 1; }
-    td:nth-child(2) { grid-column: 1; grid-row: 2; color: var(--muted); font-size: 13px; }
-    td:nth-child(4) { grid-column: 2; grid-row: 2; } td.msg { grid-column: 1 / -1; grid-row: 3; min-width: 0; font-size: 13px; }
-  }
-  footer { color: var(--muted); font: 12px var(--mono); margin-top: 16px; }
+:root{--bg:#070b0a;--panel:#0d1512;--panel2:#101c17;--line:#203b2e;--text:#e0eee5;--muted:#82988a;--green:#63f59a;--green2:#2bbf70;--red:#ff6575;--amber:#f6bd60;--blue:#79baff;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#14251b 0%,var(--bg) 55%);color:var(--text);font:14px/1.5 var(--sans)}main{max-width:1440px;margin:auto;padding:24px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.mark{width:38px;height:38px;border:1px solid #347b51;border-radius:11px;display:grid;place-items:center;color:var(--green);font:700 20px var(--mono);background:#10241a}.brand h1{font:700 18px var(--mono);letter-spacing:.18em;margin:0}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.16em;margin-top:2px}.header-right{display:flex;gap:10px;align-items:center}.status{border:1px solid #2c6945;color:var(--green);border-radius:30px;padding:6px 11px;font:600 11px var(--mono);letter-spacing:.06em}.status:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:8px;box-shadow:0 0 10px currentColor}.status.bad{color:var(--red);border-color:#70333b}
+h2{font:600 11px var(--mono);letter-spacing:.15em;text-transform:uppercase;color:#91a99a;margin:0 0 14px}.muted{color:var(--muted)}.mono{font-family:var(--mono)}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}.metric,.panel{background:linear-gradient(145deg,rgba(17,29,23,.96),rgba(10,17,14,.98));border:1px solid var(--line);border-radius:13px}.metric{padding:15px 17px}.metric-label{font:10px var(--mono);color:var(--muted);letter-spacing:.1em;text-transform:uppercase}.metric-value{font:700 25px var(--mono);margin-top:5px;letter-spacing:-.04em}.metric-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(290px,.8fr);gap:14px;margin-bottom:14px}.panel{padding:17px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.panel-head h2{margin:0}.subhead{color:var(--muted);font:10px var(--mono)}
+.tabs{display:flex;gap:5px;background:#08100c;padding:4px;border-radius:9px;border:1px solid var(--line)}button{cursor:pointer;border:0;color:var(--muted);background:transparent;padding:7px 11px;border-radius:6px;font:600 11px var(--mono)}button.active{background:#1b3827;color:var(--green)}button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.visual{position:relative;background:linear-gradient(180deg,#09130f,#08100d);border:1px solid #1a3326;border-radius:10px;overflow:hidden;min-height:380px}.visual svg{width:100%;height:auto;display:block;min-height:340px}.visual-note{font-size:10px;color:var(--muted);margin:9px 2px 0}.entity-list{display:flex;flex-direction:column;gap:8px}.entity{border:1px solid var(--line);background:#0a120e;border-radius:9px;padding:11px;cursor:pointer}.entity.selected{border-color:#58d98b;background:#102219}.entity-top{display:flex;justify-content:space-between;gap:8px;align-items:center}.entity-name{font:700 12px var(--mono);color:var(--green)}.tag{font:10px var(--mono);padding:3px 7px;border-radius:4px;background:#1c3527;color:var(--green)}.tag.warn{background:#382b17;color:var(--amber)}.entity-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:9px;color:var(--muted);font-size:11px}.entity-meta b{display:block;color:var(--text);font:600 12px var(--mono);margin-top:1px}
+.detail{margin-top:12px;padding:12px;border-radius:9px;background:#080f0b;border:1px solid var(--line);font-size:11px;color:var(--muted)}.detail strong{color:var(--text);font-family:var(--mono)}
+.lower{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:14px;margin-bottom:14px}.timeline{display:flex;flex-direction:column;gap:0;max-height:350px;overflow:auto}.event{display:grid;grid-template-columns:88px 10px 1fr;gap:10px;padding:10px 4px;border-bottom:1px solid #1a2c22}.event:last-child{border-bottom:0}.event time{font:10px var(--mono);color:var(--muted);padding-top:2px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:5px;box-shadow:0 0 9px currentColor}.dot.move{background:var(--blue)}.dot.lost{background:var(--amber)}.event-title{font:600 11px var(--mono)}.event-desc{color:var(--muted);font-size:11px;margin-top:2px}
+.heat{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-width:440px;margin:15px auto}.cell{aspect-ratio:1;border-radius:5px;display:grid;place-items:center;color:#06110a;font:600 10px var(--mono);background:#15251c}.cell.none{color:#506357;background:#101a14}.chart{width:100%;height:auto;display:block}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);font-size:11px}th{font:10px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}td{color:var(--text)}td:last-child{color:var(--muted)}
+.empty{color:var(--muted);font-size:12px;padding:14px 4px}.footer{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font:10px var(--mono);padding:4px 2px 18px}
+@media(max-width:900px){main{padding:15px}.layout{grid-template-columns:1fr}.lower{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.visual{min-height:280px}.visual svg{min-height:280px}}
+@media(max-width:520px){header{align-items:flex-start}.brand h1{font-size:15px}.header-right{flex-direction:column;align-items:flex-end}.metrics{gap:8px}.metric{padding:12px}.metric-value{font-size:21px}.panel{padding:13px}.visual svg{min-height:240px}.event{grid-template-columns:70px 9px 1fr;gap:7px}}
 </style>
 </head>
 <body>
 <main>
-  <header>
-    <h1>PROXISENSE</h1>
-    <span id="link" class="pill off" role="status">Conectando…</span>
-  </header>
-
-  <section class="grid cards" id="devices" aria-label="Dispositivos"></section>
-
-  <div class="grid two">
-    <section class="panel" aria-label="Mapa de calor">
-      <h2>Mapa de calor 8×8</h2>
-      <select id="pick" aria-label="Dispositivo" hidden></select>
-      <div class="heat" id="heat"></div>
-      <div class="legend"><span>cerca</span><i></i><span>2 m +</span></div>
-      <p class="empty" id="heatnote" style="text-align:center;margin:8px 0 0"></p>
-    </section>
-
-    <section class="panel" aria-label="Actividad">
-      <h2>Actividad · últimas 24 h</h2>
-      <div id="chart"></div>
-    </section>
-  </div>
-
-  <section class="panel" aria-label="Eventos recientes">
-    <h2>Eventos recientes</h2>
-    <div class="wrap"><table>
-      <thead><tr><th>Hora</th><th>Dispositivo</th><th>Tipo</th><th style="text-align:right">Distancia</th><th>Detalle</th></tr></thead>
-      <tbody id="events"></tbody>
-    </table></div>
-    <p class="empty" id="noevents" hidden>Sin eventos todavía.</p>
-  </section>
-
-  <footer>Se actualiza cada 2 segundos. Las horas se muestran en la zona horaria de este navegador.</footer>
+<header>
+ <div class="brand"><div class="mark">P</div><div><h1>PROXISENSE</h1><small>SPATIAL MONITORING SYSTEM</small></div></div>
+ <div class="header-right"><span id="device-status" class="status">CONECTANDO</span><span id="updated" class="subhead">Esperando datos</span></div>
+</header>
+<section class="metrics">
+ <article class="metric"><div class="metric-label">Entidades activas</div><div class="metric-value" id="metric-entities">—</div><div class="metric-sub">Seguimiento temporal</div></article>
+ <article class="metric"><div class="metric-label">Distancia mínima</div><div class="metric-value" id="metric-distance">—</div><div class="metric-sub">Lectura válida más cercana</div></article>
+ <article class="metric"><div class="metric-label">Eventos de movimiento</div><div class="metric-value" id="metric-events">0</div><div class="metric-sub">En esta sesión del panel</div></article>
+ <article class="metric"><div class="metric-label">Dispositivos</div><div class="metric-value" id="metric-devices">0</div><div class="metric-sub" id="metric-device-name">Sin dispositivo</div></article>
+</section>
+<section class="layout">
+ <article class="panel">
+  <div class="panel-head"><h2>Vista espacial 2D</h2><span class="subhead" id="view-source">MATRIZ 8 × 8</span></div>
+  <div class="visual" id="spatial-view"><svg id="spatial-svg" viewBox="0 0 760 430" role="img" aria-label="Vista espacial aproximada de las detecciones LiDAR"></svg></div>
+  <p class="visual-note">Representación espacial estimada a partir de las 64 celdas. La posición lateral es relativa a la columna del sensor, no una coordenada física calibrada.</p>
+ </article>
+ <aside class="panel">
+  <div class="panel-head"><h2>Seguimiento de entidades</h2><span class="subhead" id="track-count">0 TRACKS</span></div>
+  <div id="entity-list" class="entity-list"><p class="empty">Esperando una matriz LiDAR válida…</p></div>
+  <div id="entity-detail" class="detail">Selecciona una entidad para consultar su seguimiento.</div>
+ </aside>
+</section>
+<section class="lower">
+ <article class="panel">
+  <div class="panel-head"><h2>Historial de movimiento</h2><span class="subhead">EVENTOS DE ESTA SESIÓN</span></div>
+  <div id="movement-history" class="timeline"><p class="empty">Todavía no hay movimientos registrados.</p></div>
+ </article>
+ <article class="panel">
+  <div class="panel-head"><h2>Actividad · últimas 24 h</h2><span class="subhead">EVENTOS DEL SERVIDOR</span></div>
+  <div id="activity-chart"></div>
+  <div class="panel-head" style="margin-top:18px"><h2>Eventos del sistema</h2><span class="subhead">AWS · PERSISTIDOS</span></div>
+  <div class="table-wrap"><table><thead><tr><th>Hora</th><th>Dispositivo</th><th>Tipo</th><th>Distancia</th></tr></thead><tbody id="server-events"></tbody></table></div>
+  <p class="empty" id="server-empty" hidden>Sin eventos registrados en AWS.</p>
+ </article>
+</section>
+<section class="panel" style="margin-bottom:14px">
+ <div class="panel-head"><h2>Diagnóstico del sensor</h2><div class="tabs"><button id="tab-spatial" class="active" type="button">VISTA ESPACIAL</button><button id="tab-heat" type="button">MATRIZ 8×8</button></div></div>
+ <div id="heat-panel" hidden><div id="heat" class="heat"></div><p class="visual-note" style="text-align:center">Vista de diagnóstico de las lecturas originales. No representa entidades clasificadas.</p></div>
+ <div id="spatial-help" class="subhead">La vista espacial y el seguimiento se calculan a partir de la matriz recibida del sensor.</div>
+</section>
+<div class="footer"><span>PROXISENSE · LIDAR 8×8</span><span>Actualización cada 2 segundos · Umbral inicial de detección: 1500 mm</span></div>
 </main>
-
 <script>
 "use strict";
-const NEAR_MM = 1500;      // contorno rojo: distancia de alerta del monitor
-const FAR_MM = 2000;
-let data = null, fetchedAt = 0, selected = null;
-
-const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
-const clear = n => { while (n.firstChild) n.removeChild(n.firstChild); };
-const ago = s => s < 60 ? `${Math.round(s)} s` : s < 3600 ? `${Math.floor(s / 60)} min` : s < 86400 ? `${Math.floor(s / 3600)} h` : `${Math.floor(s / 86400)} d`;
-const fmtTime = iso => new Date(iso).toLocaleString(undefined, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
-const mm = v => v == null ? "—" : `${Math.round(v)} mm`;
-
-// cerca = amarillo, medio = verde, lejos = morado (como el radar)
-const STOPS = [[245, 230, 99], [61, 187, 122], [70, 50, 126]];
-function heatColor(d) {
-  const t = Math.min(1, Math.max(0, d / FAR_MM)) * 2, i = Math.min(1, Math.floor(t)), f = t - i;
-  const c = STOPS[i].map((v, k) => Math.round(v + (STOPS[i + 1][k] - v) * f));
-  return `rgb(${c[0]},${c[1]},${c[2]})`;
-}
-
-function renderDevices() {
-  const box = document.getElementById("devices"); clear(box);
-  if (!data.devices.length) { const p = el("p", "panel empty", "Aún no ha llegado ningún dispositivo. Revisa la clave y la dirección del servidor en el monitor."); box.appendChild(p); return; }
-  const drift = (Date.now() - fetchedAt) / 1000;
-  for (const d of data.devices) {
-    const card = el("article", "panel card");
-    card.appendChild(el("h3", "", d.device));
-    const online = d.online && drift < 30;
-    card.appendChild(el("span", "pill " + (online ? "on" : "off"), online ? "EN LÍNEA" : "SIN SEÑAL"));
-    const dl = el("dl");
-    for (const [k, v] of [["Visto", `hace ${ago(d.seconds_ago + drift)}`], ["Más cercano", mm(d.nearest_mm)], ["Celdas cerca", d.cells_near == null ? "—" : String(d.cells_near)]]) { dl.appendChild(el("dt", "", k)); dl.appendChild(el("dd", "", v)); }
-    card.appendChild(dl); box.appendChild(card);
+const NEAR_MM=1500, MAX_MM=4000, SVG_NS="http://www.w3.org/2000/svg";
+let state=null, selectedId=null, nextId=1, tracks=[], lastFrameKey="", movementHistory=[];
+try{movementHistory=JSON.parse(sessionStorage.getItem("px-movement-history")||"[]");if(!Array.isArray(movementHistory))movementHistory=[];}catch{movementHistory=[];}
+const $=id=>document.getElementById(id);
+const node=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+const clear=n=>{while(n.firstChild)n.removeChild(n.firstChild);};
+const fmtMM=v=>v==null?"—":Math.round(v)+" mm";
+const fmtClock=v=>new Date(v).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+function svgEl(tag,attrs={},text){const n=document.createElementNS(SVG_NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;return n;}
+function getDevice(){if(!state||!state.devices.length)return null;return state.devices.find(d=>d.online&&d.frame)||state.devices.find(d=>d.frame)||state.devices[0];}
+function validFrame(frame){return Array.isArray(frame)&&frame.length===64&&frame.some(v=>Number.isFinite(v)&&v>0&&v<MAX_MM);}
+function clusterFrame(frame){
+ const active=frame.map((v,i)=>Number.isFinite(v)&&v>0&&v<=NEAR_MM?i:-1).filter(i=>i>=0),set=new Set(active),seen=new Set(),groups=[];
+ for(const start of active){if(seen.has(start))continue;const stack=[start],cells=[];seen.add(start);
+  while(stack.length){const i=stack.pop();cells.push(i);const r=Math.floor(i/8),c=i%8;
+   for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(!dr&&!dc)continue;const rr=r+dr,cc=c+dc;if(rr<0||rr>7||cc<0||cc>7)continue;const j=rr*8+cc;if(!set.has(j)||seen.has(j))continue;if(Math.abs(frame[j]-frame[i])>650)continue;seen.add(j);stack.push(j);}
   }
+  if(cells.length>=1){const vals=cells.map(i=>frame[i]);groups.push({row:cells.reduce((s,i)=>s+Math.floor(i/8),0)/cells.length,col:cells.reduce((s,i)=>s+i%8,0)/cells.length,distance:vals.reduce((a,b)=>a+b,0)/vals.length,cells:cells.length,nearest:Math.min(...vals)});}
+ }
+ return groups;
 }
-
-function renderHeat() {
-  const pick = document.getElementById("pick"), heat = document.getElementById("heat"), note = document.getElementById("heatnote");
-  const withFrame = data.devices.filter(d => d.frame);
-  pick.hidden = withFrame.length < 2;
-  if (!pick.hidden) {
-    const names = withFrame.map(d => d.device);
-    if (pick.options.length !== names.length || names.some((n, i) => pick.options[i].value !== n)) { clear(pick); names.forEach(n => { const o = el("option", "", n); o.value = n; pick.appendChild(o); }); }
-    if (!names.includes(selected)) selected = names[0];
-    pick.value = selected;
-  }
-  const dev = withFrame.find(d => d.device === selected) || withFrame[0];
-  clear(heat);
-  if (!dev) { note.textContent = "Ningún dispositivo ha enviado una matriz todavía (los sensores de una sola distancia no la envían)."; return; }
-  note.textContent = `Contorno rojo: ${NEAR_MM} mm o menos. Dispositivo: ${dev.device}`;
-  dev.frame.forEach(v => {
-    const valid = v > 0 && v < 4000, c = el("div", "cell" + (valid ? "" : " none") + (valid && v <= NEAR_MM ? " near" : ""), valid ? String(Math.round(v)) : "—");
-    if (valid) c.style.background = heatColor(v);
-    heat.appendChild(c);
-  });
+function addMovement(type,track,detail){const entry={id:Date.now()+"-"+Math.random().toString(16).slice(2,7),time:new Date().toISOString(),type,entity:"ENTIDAD "+String(track.id).padStart(2,"0"),detail};movementHistory.unshift(entry);movementHistory=movementHistory.slice(0,80);try{sessionStorage.setItem("px-movement-history",JSON.stringify(movementHistory));}catch{}}
+function updateTracks(detections){
+ const now=Date.now();for(const t of tracks)t.missed++;
+ const pairs=[];tracks.forEach((t,ti)=>detections.forEach((d,di)=>{const dc=Math.abs(t.col-d.col),dd=Math.abs(t.distance-d.distance);if(dc<=1.8&&dd<=650)pairs.push({score:dc/1.8+dd/650,ti,di});}));
+ const usedT=new Set(),usedD=new Set();pairs.sort((a,b)=>a.score-b.score).forEach(p=>{if(usedT.has(p.ti)||usedD.has(p.di))return;const t=tracks[p.ti],d=detections[p.di],old={col:t.col,row:t.row,distance:t.distance};t.col=t.col*.55+d.col*.45;t.row=t.row*.55+d.row*.45;t.distance=t.distance*.55+d.distance*.45;t.nearest=d.nearest;t.cells=d.cells;t.missed=0;t.lastSeen=now;t.samples++;t.moving=Math.abs(t.col-old.col)>.35||Math.abs(t.distance-old.distance)>170;if(t.moving&&now-t.lastMovementEvent>2500){addMovement("move",t,"Cambio de posición estimada");t.lastMovementEvent=now;}usedT.add(p.ti);usedD.add(p.di);});
+ detections.forEach((d,i)=>{if(usedD.has(i))return;const t={id:nextId++,...d,missed:0,lastSeen:now,samples:1,moving:false,lastMovementEvent:0};tracks.push(t);addMovement("new",t,"Nueva agrupación espacial detectada");});
+ const kept=[];for(const t of tracks){if(t.missed>3){addMovement("lost",t,"La agrupación dejó de estar visible");if(selectedId===t.id)selectedId=null;}else kept.push(t);}tracks=kept;
 }
-
-function renderChart() {
-  const box = document.getElementById("chart"); clear(box);
-  const h = data.hourly, max = Math.max(1, ...h.map(b => b.alerts + b.presences));
-  if (h.every(b => b.alerts + b.presences === 0)) { box.appendChild(el("p", "empty", "Sin actividad en las últimas 24 horas.")); return; }
-  const W = 480, H = 160, base = 138, bw = W / h.length, ns = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(ns, "svg"); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("role", "img");
-  svg.setAttribute("aria-label", "Alertas y detecciones silenciadas por hora");
-  const rect = (x, y, w, hh, fill) => { const r = document.createElementNS(ns, "rect"); r.setAttribute("x", x); r.setAttribute("y", y); r.setAttribute("width", w); r.setAttribute("height", hh); r.setAttribute("rx", 2); r.setAttribute("fill", fill); svg.appendChild(r); };
-  h.forEach((b, i) => {
-    const ha = (b.alerts / max) * 110, hp = (b.presences / max) * 110;
-    rect(i * bw + 2, base - ha, bw - 4, ha, "#ff5a5a"); rect(i * bw + 2, base - ha - hp, bw - 4, hp, "#ffb020");
-    if (i % 6 === 0) { const t = document.createElementNS(ns, "text"); t.setAttribute("x", i * bw + 2); t.setAttribute("y", 154); t.textContent = new Date(b.hour_start).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }); svg.appendChild(t); }
-  });
-  const axis = document.createElementNS(ns, "line"); [["x1", 0], ["x2", W], ["y1", base + .5], ["y2", base + .5]].forEach(([k, v]) => axis.setAttribute(k, v)); axis.setAttribute("stroke", "#1b4a30"); svg.appendChild(axis);
-  box.appendChild(svg);
-  const a = h.reduce((n, b) => n + b.alerts, 0), p = h.reduce((n, b) => n + b.presences, 0);
-  box.appendChild(el("p", "", `Total 24 h: ${a} alerta${a === 1 ? "" : "s"} enviada${a === 1 ? "" : "s"} · ${p} silenciada${p === 1 ? "" : "s"}`));
-  box.appendChild(el("p", "empty", "Rojo: alertas enviadas · Ámbar: detecciones silenciadas (privacidad)"));
+function drawSpatial(device){
+ const svg=$("spatial-svg");clear(svg);const W=760,H=430,cx=380,base=385,frame=device&&device.frame;
+ // background grid and range arcs
+ svg.appendChild(svgEl("rect",{x:0,y:0,width:W,height:H,fill:"#08110d"}));
+ for(let x=70;x<=690;x+=40)svg.appendChild(svgEl("line",{x1:x,y1:20,x2:x,y2:base,stroke:"#14291e","stroke-width":1}));
+ for(let y=65;y<=365;y+=50)svg.appendChild(svgEl("line",{x1:45,y1:y,x2:715,y2:y,stroke:"#14291e","stroke-width":1}));
+ [1000,2000,3000,4000].forEach(mm=>{const y=base-mm/MAX_MM*300;svg.appendChild(svgEl("line",{x1:75,y1:y,x2:685,y2:y,stroke:"#294333","stroke-dasharray":"4 7"}));svg.appendChild(svgEl("text",{x:82,y:y-5,fill:"#779181","font-size":10},mm/1000+" m"));});
+ svg.appendChild(svgEl("line",{x1:cx,y1:28,x2:cx,y2:base,stroke:"#3b624a","stroke-dasharray":"3 6"}));
+ svg.appendChild(svgEl("path",{d:"M 310 34 L 450 34",stroke:"#63f59a","stroke-width":3,"stroke-linecap":"round"}));
+ svg.appendChild(svgEl("text",{x:cx,y:20,"text-anchor":"middle",fill:"#8eaa98","font-size":10}, "LÍMITE DEL CAMPO DE VISIÓN"));
+ // Sensor icon
+ svg.appendChild(svgEl("rect",{x:cx-23,y:base+3,width:46,height:22,rx:6,fill:"#163b27",stroke:"#63f59a"}));
+ svg.appendChild(svgEl("text",{x:cx,y:base+18,"text-anchor":"middle",fill:"#63f59a","font-size":10}, "LIDAR"));
+ if(!frame||!validFrame(frame)){svg.appendChild(svgEl("text",{x:cx,y:210,"text-anchor":"middle",fill:"#82988a","font-size":14},"Esperando matriz LiDAR 8×8"));return;}
+ // Render each valid cell as a point; horizontal axis is relative column, vertical axis is measured distance.
+ frame.forEach((v,i)=>{if(!(v>0&&v<MAX_MM))return;const row=Math.floor(i/8),col=i%8,x=cx+(col-3.5)*72+(row-3.5)*7,y=base-v/MAX_MM*300;const near=v<=NEAR_MM;svg.appendChild(svgEl("circle",{cx:x,cy:y,r:near?5:3.2,fill:near?"#ff6575":"#47745a",opacity:near?.95:.48,stroke:near?"#ffd2d6":"none","stroke-width":1}));});
+ tracks.forEach(t=>{const x=cx+(t.col-3.5)*72+(t.row-3.5)*7,y=base-t.distance/MAX_MM*300;const chosen=t.id===selectedId;svg.appendChild(svgEl("circle",{cx:x,cy:y,r:chosen?18:14,fill:"none",stroke:chosen?"#79baff":"#63f59a","stroke-width":chosen?2.5:1.5,"stroke-dasharray":chosen?"":"3 3"}));svg.appendChild(svgEl("circle",{cx:x,cy:y,r:3.5,fill:chosen?"#79baff":"#63f59a"}));svg.appendChild(svgEl("text",{x:x+17,y:y-13,fill:chosen?"#a9d2ff":"#a5ffc3","font-size":11,"font-weight":700},"E"+String(t.id).padStart(2,"0")));});
+ svg.appendChild(svgEl("text",{x:cx,y:418,"text-anchor":"middle",fill:"#82988a","font-size":10},"SENSOR · DISTANCIA EN PROFUNDIDAD ↑"));
 }
-
-function renderEvents() {
-  const body = document.getElementById("events"); clear(body);
-  document.getElementById("noevents").hidden = data.events.length > 0;
-  const label = { alert: "ALERTA", presence: "SILENCIADA", info: "INFO" };
-  for (const e of data.events) {
-    const tr = el("tr"), badge = el("span", "badge " + e.kind, label[e.kind] || e.kind), td = el("td"); td.appendChild(badge);
-    tr.appendChild(el("td", "", fmtTime(e.ts))); tr.appendChild(el("td", "", e.device)); tr.appendChild(td);
-    tr.appendChild(el("td", "num", mm(e.distance_mm))); tr.appendChild(el("td", "msg", e.message || "")); body.appendChild(tr);
-  }
+function renderEntities(){
+ const box=$("entity-list");clear(box);$("track-count").textContent=tracks.length+" TRACKS";$("metric-entities").textContent=tracks.length;
+ if(!tracks.length){box.appendChild(node("p","empty","No hay entidades activas dentro del umbral de detección."));$("entity-detail").textContent="Las entidades aparecerán cuando existan agrupaciones de celdas cercanas.";return;}
+ tracks.forEach(t=>{const item=node("div","entity"+(selectedId===t.id?" selected":""));item.tabIndex=0;item.setAttribute("role","button");item.appendChild(node("div","entity-top"));const top=item.firstChild;top.appendChild(node("span","entity-name","ENTIDAD "+String(t.id).padStart(2,"0")));top.appendChild(node("span","tag"+(t.moving?"":" warn"),t.moving?"EN MOVIMIENTO":"ESTABLE"));const meta=node("div","entity-meta");[["Distancia",fmtMM(t.nearest)],["Celdas",String(t.cells)],["Tiempo",Math.max(0,Math.round((Date.now()-t.lastSeen)/1000))+" s"],["Seguimiento",t.samples+" muestras"]].forEach(([k,v])=>{const d=node("div","",k);d.appendChild(node("b","",v));meta.appendChild(d);});item.appendChild(meta);item.addEventListener("click",()=>{selectedId=t.id;renderEntities();drawSpatial(getDevice());});item.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();item.click();}});box.appendChild(item);});
+ const t=tracks.find(x=>x.id===selectedId)||tracks[0];if(!selectedId)selectedId=t.id;$("entity-detail").innerHTML="";[["Identificador","ENTIDAD "+String(t.id).padStart(2,"0")],["Distancia media",fmtMM(t.distance)],["Distancia mínima",fmtMM(t.nearest)],["Centro relativo","columna "+(t.col+1).toFixed(1)+" / 8"],["Antigüedad de seguimiento",Math.max(0,Math.round((Date.now()-t.lastSeen)/1000))+" s"]].forEach(([k,v])=>{const line=node("div","",k+": ");line.appendChild(node("strong","",v));$("entity-detail").appendChild(line);});
 }
-
-function setLink(ok) { const l = document.getElementById("link"); l.className = "pill " + (ok ? "on" : "bad"); l.textContent = ok ? `Actualizado ${new Date().toLocaleTimeString()}` : "Sin conexión con el servidor"; }
-
-async function refresh() {
-  try {
-    const r = await fetch("/api/state", { cache: "no-store" });
-    if (!r.ok) throw new Error(r.status);
-    data = await r.json(); fetchedAt = Date.now(); setLink(true);
-    renderDevices(); renderHeat(); renderChart(); renderEvents();
-  } catch (e) { setLink(false); }
-}
-document.getElementById("pick").addEventListener("change", e => { selected = e.target.value; if (data) renderHeat(); });
-refresh(); setInterval(refresh, 2000);
+function renderMovement(){const box=$("movement-history");clear(box);$("metric-events").textContent=movementHistory.length;if(!movementHistory.length){box.appendChild(node("p","empty","Todavía no hay movimientos registrados."));return;}movementHistory.slice(0,35).forEach(e=>{const row=node("div","event"),time=node("time","",fmtClock(e.time)),dot=node("span","dot "+(e.type==="move"?"move":e.type==="lost"?"lost":"")),body=node("div","");body.appendChild(node("div","event-title",e.entity+" · "+(e.type==="new"?"DETECCIÓN":e.type==="move"?"MOVIMIENTO":"SEÑAL PERDIDA")));body.appendChild(node("div","event-desc",e.detail));row.append(time,dot,body);box.appendChild(row);});}
+function renderHeat(device){const box=$("heat");clear(box);if(!device||!validFrame(device.frame)){box.appendChild(node("p","empty","No hay una matriz completa disponible."));return;}device.frame.forEach(v=>{const valid=v>0&&v<MAX_MM,c=node("div","cell"+(valid?"":" none"),valid?Math.round(v):"—");if(valid){const hue=Math.max(0,125-v/MAX_MM*125);c.style.background="hsl("+hue+" 48% 48%)";}box.appendChild(c);});}
+function renderServerEvents(){const body=$("server-events");clear(body);$("server-empty").hidden=!!(state&&state.events.length);(state?.events||[]).slice(0,8).forEach(e=>{const tr=node("tr");tr.append(node("td","",fmtClock(e.ts)),node("td","",e.device),node("td","",e.kind==="alert"?"ALERTA":e.kind==="presence"?"PRESENCIA":"INFO"),node("td","",fmtMM(e.distance_mm)));body.appendChild(tr);});}
+function renderActivity(){const box=$("activity-chart");clear(box);const hours=state?.hourly||[],max=Math.max(1,...hours.map(h=>h.alerts+h.presences));if(!hours.length||hours.every(h=>h.alerts+h.presences===0)){box.appendChild(node("p","empty","Sin eventos registrados en las últimas 24 horas."));return;}const svg=svgEl("svg",{viewBox:"0 0 500 145",class:"chart",role:"img","aria-label":"Actividad por hora"});hours.forEach((h,i)=>{const v=h.alerts+h.presences,bw=500/24-4,height=v/max*105;svg.appendChild(svgEl("rect",{x:i*500/24+2,y:120-height,width:bw,height:height,rx:3,fill:h.alerts?"#ff6575":"#f6bd60",opacity:.85}));});svg.appendChild(svgEl("line",{x1:0,y1:121,x2:500,y2:121,stroke:"#294333"}));box.appendChild(svg);}
+function renderMetrics(device){$("metric-devices").textContent=state?.devices?.length||0;$("metric-device-name").textContent=device?device.device:"Sin dispositivo";$("metric-distance").textContent=fmtMM(device?.nearest_mm);const online=!!(device?.online);$("device-status").textContent=online?"SISTEMA EN LÍNEA":"SIN SEÑAL";$("device-status").className="status"+(online?"":" bad");$("updated").textContent="Actualizado "+new Date().toLocaleTimeString();}
+async function refresh(){try{const response=await fetch("/api/state",{cache:"no-store"});if(!response.ok)throw Error("HTTP "+response.status);state=await response.json();const device=getDevice();renderMetrics(device);renderServerEvents();renderActivity();if(device&&validFrame(device.frame)){const key=device.device+":"+device.frame.join(",");if(key!==lastFrameKey){lastFrameKey=key;updateTracks(clusterFrame(device.frame));}}else{tracks=[];selectedId=null;}renderEntities();drawSpatial(device);renderMovement();renderHeat(device);}catch(error){$("device-status").textContent="ERROR DE CONEXIÓN";$("device-status").className="status bad";$("updated").textContent="No se pudo consultar AWS";}}
+$("tab-heat").addEventListener("click",()=>{$("tab-heat").classList.add("active");$("tab-spatial").classList.remove("active");$("heat-panel").hidden=false;$("spatial-help").hidden=true;});
+$("tab-spatial").addEventListener("click",()=>{$("tab-spatial").classList.add("active");$("tab-heat").classList.remove("active");$("heat-panel").hidden=true;$("spatial-help").hidden=false;});
+refresh();setInterval(refresh,2000);
 </script>
 </body>
 </html>
