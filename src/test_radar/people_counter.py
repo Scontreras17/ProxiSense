@@ -6,6 +6,7 @@ La frecuencia de salida depende del sensor y del flujo serie real.
 from __future__ import annotations
 
 import time
+from collections import deque
 from dataclasses import dataclass
 
 import numpy as np
@@ -48,8 +49,7 @@ class DoorwayCounter:
         self._last_cross = 0.0
         self._last_presence = 0.0
         self._last_frame = 0.0
-        self._rate_frames = 0
-        self._rate_started = time.monotonic()
+        self._sample_times: deque[float] = deque(maxlen=100)
 
     def update(self, frame: np.ndarray, now: float | None = None) -> dict | None:
         now = time.monotonic() if now is None else now
@@ -57,9 +57,10 @@ class DoorwayCounter:
         valid = np.isfinite(matrix) & (matrix > 0) & (matrix < 4000) & (matrix <= self.threshold_mm)
         rows, cols = np.where(valid)
         self.snapshot.active_cells = int(len(cols))
-        self._rate_frames += 1
-        elapsed = max(now - self._rate_started, 1e-6)
-        self.snapshot.sample_hz = self._rate_frames / elapsed
+        self._sample_times.append(now)
+        if len(self._sample_times) >= 2:
+            elapsed = max(self._sample_times[-1] - self._sample_times[0], 1e-6)
+            self.snapshot.sample_hz = (len(self._sample_times) - 1) / elapsed
         self._last_frame = now
 
         if len(cols) == 0:
