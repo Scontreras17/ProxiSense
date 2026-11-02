@@ -170,7 +170,14 @@ def main(argv: list[str] | None = None) -> None:
             with _source_factory(args, min(0.01, period or 0.01))() as sensor:
                 while True:
                     sample_started = time.monotonic()
+                    previous_frame = getattr(sensor, "frames_received", None)
                     frame = sensor.read_rows(maximum_lines=8)
+                    current_frame = getattr(sensor, "frames_received", None)
+                    if previous_frame is not None and current_frame == previous_frame:
+                        wait = period - (time.monotonic() - sample_started)
+                        if wait > 0:
+                            time.sleep(wait)
+                        continue
                     crossing = counter.update(frame)
                     valid = frame[(frame > 0) & (frame < 4000)]
                     nearest = float(valid.min()) if valid.size else None
