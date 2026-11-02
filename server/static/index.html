@@ -3,134 +3,136 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ProxiSense | Spatial Monitor</title>
+<title>ProxiSense | Monitor de aforo</title>
 <meta name="color-scheme" content="dark">
 <style>
-:root{--bg:#070b0a;--panel:#0d1512;--panel2:#101c17;--line:#203b2e;--text:#e0eee5;--muted:#82988a;--green:#63f59a;--green2:#2bbf70;--red:#ff6575;--amber:#f6bd60;--blue:#79baff;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#14251b 0%,var(--bg) 55%);color:var(--text);font:14px/1.5 var(--sans)}main{max-width:1440px;margin:auto;padding:24px}
-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.mark{width:38px;height:38px;border:1px solid #347b51;border-radius:11px;display:grid;place-items:center;color:var(--green);font:700 20px var(--mono);background:#10241a}.brand h1{font:700 18px var(--mono);letter-spacing:.18em;margin:0}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.16em;margin-top:2px}.header-right{display:flex;gap:10px;align-items:center}.status{border:1px solid #2c6945;color:var(--green);border-radius:30px;padding:6px 11px;font:600 11px var(--mono);letter-spacing:.06em}.status:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:8px;box-shadow:0 0 10px currentColor}.status.bad{color:var(--red);border-color:#70333b}
-h2{font:600 11px var(--mono);letter-spacing:.15em;text-transform:uppercase;color:#91a99a;margin:0 0 14px}.muted{color:var(--muted)}.mono{font-family:var(--mono)}
-.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}.metric,.panel{background:linear-gradient(145deg,rgba(17,29,23,.96),rgba(10,17,14,.98));border:1px solid var(--line);border-radius:13px}.metric{padding:15px 17px}.metric-label{font:10px var(--mono);color:var(--muted);letter-spacing:.1em;text-transform:uppercase}.metric-value{font:700 25px var(--mono);margin-top:5px;letter-spacing:-.04em}.metric-sub{font-size:11px;color:var(--muted);margin-top:3px}
-.layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(290px,.8fr);gap:14px;margin-bottom:14px}.panel{padding:17px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.panel-head h2{margin:0}.subhead{color:var(--muted);font:10px var(--mono)}
-.tabs{display:flex;gap:5px;background:#08100c;padding:4px;border-radius:9px;border:1px solid var(--line)}button{cursor:pointer;border:0;color:var(--muted);background:transparent;padding:7px 11px;border-radius:6px;font:600 11px var(--mono)}button.active{background:#1b3827;color:var(--green)}button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
-.visual{position:relative;background:linear-gradient(180deg,#09130f,#08100d);border:1px solid #1a3326;border-radius:10px;overflow:hidden;min-height:380px}.visual svg{width:100%;height:auto;display:block;min-height:340px}.visual-note{font-size:10px;color:var(--muted);margin:9px 2px 0}.entity-list{display:flex;flex-direction:column;gap:8px}.entity{border:1px solid var(--line);background:#0a120e;border-radius:9px;padding:11px;cursor:pointer}.entity.selected{border-color:#58d98b;background:#102219}.entity-top{display:flex;justify-content:space-between;gap:8px;align-items:center}.entity-name{font:700 12px var(--mono);color:var(--green)}.tag{font:10px var(--mono);padding:3px 7px;border-radius:4px;background:#1c3527;color:var(--green)}.tag.warn{background:#382b17;color:var(--amber)}.entity-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:9px;color:var(--muted);font-size:11px}.entity-meta b{display:block;color:var(--text);font:600 12px var(--mono);margin-top:1px}
-.detail{margin-top:12px;padding:12px;border-radius:9px;background:#080f0b;border:1px solid var(--line);font-size:11px;color:var(--muted)}.detail strong{color:var(--text);font-family:var(--mono)}
-.lower{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:14px;margin-bottom:14px}.timeline{display:flex;flex-direction:column;gap:0;max-height:350px;overflow:auto}.event{display:grid;grid-template-columns:88px 10px 1fr;gap:10px;padding:10px 4px;border-bottom:1px solid #1a2c22}.event:last-child{border-bottom:0}.event time{font:10px var(--mono);color:var(--muted);padding-top:2px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:5px;box-shadow:0 0 9px currentColor}.dot.move{background:var(--blue)}.dot.lost{background:var(--amber)}.event-title{font:600 11px var(--mono)}.event-desc{color:var(--muted);font-size:11px;margin-top:2px}
-.heat{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-width:440px;margin:15px auto}.cell{aspect-ratio:1;border-radius:5px;display:grid;place-items:center;color:#06110a;font:600 10px var(--mono);background:#15251c}.cell.none{color:#506357;background:#101a14}.chart{width:100%;height:auto;display:block}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);font-size:11px}th{font:10px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}td{color:var(--text)}td:last-child{color:var(--muted)}
-.empty{color:var(--muted);font-size:12px;padding:14px 4px}.footer{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font:10px var(--mono);padding:4px 2px 18px}
-@media(max-width:900px){main{padding:15px}.layout{grid-template-columns:1fr}.lower{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.visual{min-height:280px}.visual svg{min-height:280px}}
-@media(max-width:520px){header{align-items:flex-start}.brand h1{font-size:15px}.header-right{flex-direction:column;align-items:flex-end}.metrics{gap:8px}.metric{padding:12px}.metric-value{font-size:21px}.panel{padding:13px}.visual svg{min-height:240px}.event{grid-template-columns:70px 9px 1fr;gap:7px}}
+:root{--bg:#0b1220;--surface:#111c2e;--surface2:#16243a;--line:#263750;--text:#e7edf5;--muted:#91a1b7;--accent:#60a5fa;--green:#34d399;--red:#fb7185;--amber:#fbbf24;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 var(--sans)}main{max-width:1400px;margin:auto;padding:28px}
+header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:26px}.brand{display:flex;align-items:center;gap:13px}.mark{width:42px;height:42px;border-radius:12px;background:#1d3554;border:1px solid #35577f;display:grid;place-items:center;color:#bfdbfe;font:700 21px var(--mono)}h1{font-size:19px;letter-spacing:.12em;margin:0}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.13em;margin-top:3px}.header-right{display:flex;align-items:center;gap:14px}.status{display:inline-flex;align-items:center;gap:8px;border:1px solid #23634f;background:#102b27;color:var(--green);padding:7px 11px;border-radius:30px;font:600 10px var(--mono);letter-spacing:.06em}.status:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}.status.bad{color:var(--red);border-color:#713448;background:#301b29}.updated{font-size:11px;color:var(--muted)}
+.section-title{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#a9bad0;margin:0}.muted{color:var(--muted)}.mono{font-family:var(--mono)}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:16px}.metric,.panel{background:var(--surface);border:1px solid var(--line);border-radius:13px}.metric{padding:17px 18px}.metric-label{color:var(--muted);font:10px var(--mono);letter-spacing:.09em;text-transform:uppercase}.metric-value{font:700 29px var(--mono);letter-spacing:-.04em;margin-top:7px}.metric-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.main-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(380px,.9fr);gap:15px;margin-bottom:15px}.panel{padding:18px;min-width:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.eyebrow{font:10px var(--mono);color:var(--muted);letter-spacing:.08em}.occupancy{display:flex;align-items:center;gap:22px;min-height:260px}.gauge{width:190px;max-width:45%;flex:none}.gauge svg{display:block;width:100%;height:auto}.gauge-value{font:700 30px var(--mono);fill:var(--text)}.gauge-label{font:10px var(--sans);fill:var(--muted)}.occupancy-info{flex:1;min-width:0}.occupancy-info .big{font:700 42px var(--mono);line-height:1.1}.occupancy-info .caption{font-size:12px;color:var(--muted);margin-top:5px}.flow-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.flow-box{padding:12px;border-radius:9px;background:var(--surface2);border:1px solid var(--line)}.flow-box span{display:block;color:var(--muted);font:10px var(--mono);text-transform:uppercase}.flow-box strong{display:block;font:700 22px var(--mono);margin-top:4px}.flow-box.in strong{color:var(--green)}.flow-box.out strong{color:var(--red)}
+.radar-wrap{display:grid;place-items:center;min-height:260px;background:radial-gradient(circle at center,#1b3150 0%,#13243b 48%,#101d30 75%);border:1px solid #2b4260;border-radius:11px;overflow:hidden}.radar{width:min(100%,350px);height:auto;display:block}.radar-sweep{transform-origin:180px 180px;animation:sweep 5s linear infinite}@keyframes sweep{to{transform:rotate(360deg)}}.radar-pulse{animation:pulse 2.6s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:.35;transform:scale(.88)}50%{opacity:1;transform:scale(1.12)}}.radar-legend{display:flex;justify-content:space-between;gap:10px;margin-top:12px;color:var(--muted);font-size:10px}.legend-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:6px}.radar-note{font-size:10px;color:var(--muted);margin:12px 2px 0;line-height:1.5}
+.lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px;margin-bottom:15px}.timeline{display:flex;flex-direction:column;max-height:340px;overflow:auto}.event{display:grid;grid-template-columns:76px 10px 1fr;gap:11px;padding:11px 3px;border-bottom:1px solid var(--line)}.event:last-child{border-bottom:0}.event time{font:10px var(--mono);color:var(--muted);padding-top:2px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:5px}.dot.out{background:var(--red)}.dot.alert{background:var(--amber)}.event-title{font:600 11px var(--mono)}.event-desc{font-size:11px;color:var(--muted);margin-top:3px}.empty{font-size:12px;color:var(--muted);padding:14px 2px}
+.chart{width:100%;height:auto;display:block}.chart-legend{display:flex;gap:16px;color:var(--muted);font-size:10px;margin-top:8px}.chart-legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}.table-wrap{overflow:auto;margin-top:12px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:11px}th{font:10px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}td:last-child{color:var(--muted)}
+.diagnostics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.diag{padding:13px;border:1px solid var(--line);border-radius:9px;background:var(--surface2)}.diag span{display:block;font:10px var(--mono);color:var(--muted);text-transform:uppercase}.diag strong{display:block;font:600 14px var(--mono);margin-top:6px}.footer{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font:10px var(--mono);padding:16px 2px}
+@media(max-width:900px){main{padding:17px}.main-grid,.lower{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.occupancy{min-height:220px}}
+@media(max-width:540px){main{padding:12px}header{align-items:flex-start}.header-right{align-items:flex-end;flex-direction:column;gap:7px}h1{font-size:16px}.metrics{gap:8px}.metric{padding:12px}.metric-value{font-size:23px}.panel{padding:13px}.occupancy{gap:12px}.gauge{width:135px}.occupancy-info .big{font-size:34px}.flow-box{padding:9px}.diagnostics{grid-template-columns:1fr 1fr}.event{grid-template-columns:64px 9px 1fr;gap:8px}}
 </style>
 </head>
 <body>
 <main>
 <header>
- <div class="brand"><div class="mark">P</div><div><h1>PROXISENSE</h1><small>DOORWAY PEOPLE COUNTING · EXPERIMENTAL</small></div></div>
- <div class="header-right"><span id="device-status" class="status">CONECTANDO</span><span id="updated" class="subhead">Esperando datos</span></div>
+ <div class="brand"><div class="mark">P</div><div><h1>PROXISENSE</h1><small>MONITOREO DE AFORO · CONTEO EXPERIMENTAL</small></div></div>
+ <div class="header-right"><span id="device-status" class="status">CONECTANDO</span><span id="updated" class="updated">Esperando datos</span></div>
 </header>
 <section class="metrics">
- <article class="metric"><div class="metric-label">Entradas</div><div class="metric-value" id="metric-in">0</div><div class="metric-sub">Cruces detectados hacia dentro</div></article>
- <article class="metric"><div class="metric-label">Salidas</div><div class="metric-value" id="metric-out">0</div><div class="metric-sub">Cruces detectados hacia fuera</div></article>
- <article class="metric"><div class="metric-label">Ocupación estimada</div><div class="metric-value" id="metric-occupancy">0</div><div class="metric-sub">Entradas − salidas + inicial</div></article>
- <article class="metric"><div class="metric-label">Frecuencia de muestreo</div><div class="metric-value" id="metric-rate">—</div><div class="metric-sub">Objetivo 100 Hz · lectura real</div></article>
- <span id="metric-entities" hidden></span><span id="metric-distance" hidden></span><span id="metric-events" hidden></span><span id="metric-devices" hidden></span><span id="metric-device-name" hidden></span>
+ <article class="metric"><div class="metric-label">Ocupación estimada</div><div class="metric-value" id="metric-occupancy">0</div><div class="metric-sub">Personas dentro según el contador</div></article>
+ <article class="metric"><div class="metric-label">Entradas acumuladas</div><div class="metric-value" id="metric-in" style="color:var(--green)">0</div><div class="metric-sub">Cruces detectados hacia dentro</div></article>
+ <article class="metric"><div class="metric-label">Salidas acumuladas</div><div class="metric-value" id="metric-out" style="color:var(--red)">0</div><div class="metric-sub">Cruces detectados hacia fuera</div></article>
+ <article class="metric"><div class="metric-label">Frecuencia de lectura</div><div class="metric-value" id="metric-rate">—</div><div class="metric-sub">Objetivo configurado: 100 Hz</div></article>
 </section>
-<section class="layout">
+<section class="main-grid">
  <article class="panel">
-  <div class="panel-head"><h2>Zona de paso · Vista espacial 2D</h2><span class="subhead" id="view-source">MATRIZ 8 × 8</span></div>
-  <div class="visual" id="spatial-view"><svg id="spatial-svg" viewBox="0 0 760 430" role="img" aria-label="Vista espacial aproximada de las detecciones LiDAR"></svg></div>
-  <p class="visual-note">Representación espacial estimada a partir de las 64 celdas. La posición lateral es relativa a la columna del sensor, no una coordenada física calibrada.</p>
+  <div class="panel-head"><h2 class="section-title">Aforo actual</h2><span class="eyebrow" id="device-name">DISPOSITIVO —</span></div>
+  <div class="occupancy">
+   <div class="gauge"><svg viewBox="0 0 200 200" role="img" aria-label="Indicador de ocupación estimada"><circle cx="100" cy="100" r="79" fill="none" stroke="#263750" stroke-width="13"/><circle id="gauge-progress" cx="100" cy="100" r="79" fill="none" stroke="#60a5fa" stroke-width="13" stroke-linecap="round" stroke-dasharray="496" stroke-dashoffset="496" transform="rotate(-90 100 100)"/><text id="gauge-percent" x="100" y="96" text-anchor="middle" class="gauge-value">—</text><text x="100" y="117" text-anchor="middle" class="gauge-label">DE CAPACIDAD</text></svg></div>
+   <div class="occupancy-info"><div class="big" id="occupancy-number">0</div><div class="caption">personas estimadas en el recinto</div><div class="flow-stats"><div class="flow-box in"><span>Entradas</span><strong id="flow-in">0</strong></div><div class="flow-box out"><span>Salidas</span><strong id="flow-out">0</strong></div></div></div>
+  </div>
+  <p class="radar-note">El porcentaje utiliza una capacidad de referencia de 40 personas. La ocupación es una estimación acumulada desde el valor inicial del contador.</p>
  </article>
- <aside class="panel">
-  <div class="panel-head"><h2>Detecciones en la zona</h2><span class="subhead" id="track-count">0 TRACKS</span></div>
-  <div id="entity-list" class="entity-list"><p class="empty">Esperando una matriz LiDAR válida…</p></div>
-  <div id="entity-detail" class="detail">Selecciona una entidad para consultar su seguimiento.</div>
- </aside>
+ <article class="panel">
+  <div class="panel-head"><h2 class="section-title">Radar de actividad</h2><span class="eyebrow" id="radar-state">SIN LECTURAS</span></div>
+  <div class="radar-wrap">
+   <svg class="radar" viewBox="0 0 360 360" role="img" aria-label="Radar conceptual de actividad del sensor">
+    <defs><radialGradient id="radarBg"><stop offset="0" stop-color="#203c5e"/><stop offset="1" stop-color="#12243b"/></radialGradient><linearGradient id="sweepFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#60a5fa" stop-opacity=".35"/><stop offset="1" stop-color="#60a5fa" stop-opacity="0"/></linearGradient></defs>
+    <circle cx="180" cy="180" r="148" fill="url(#radarBg)" stroke="#476487"/><circle cx="180" cy="180" r="110" fill="none" stroke="#45617f" stroke-width="1"/><circle cx="180" cy="180" r="72" fill="none" stroke="#45617f" stroke-width="1"/><circle cx="180" cy="180" r="36" fill="none" stroke="#45617f" stroke-width="1"/>
+    <path d="M32 180H328M180 32V328M75 75L285 285M285 75L75 285" stroke="#385574" stroke-width="1" opacity=".8"/>
+    <path class="radar-sweep" d="M180 180L180 32A148 148 0 0 1 284.6 75.4Z" fill="url(#sweepFill)"/><line class="radar-sweep" x1="180" y1="180" x2="180" y2="35" stroke="#93c5fd" stroke-width="2" opacity=".9"/>
+    <g id="radar-points"><circle class="radar-pulse" cx="180" cy="180" r="5" fill="#93c5fd"/></g>
+    <circle cx="180" cy="180" r="4" fill="#dbeafe"/>
+    <text x="180" y="18" text-anchor="middle" fill="#9fb5ce" font-size="9">ACTIVIDAD RELATIVA</text>
+   </svg>
+  </div>
+  <div class="radar-legend"><span><i class="legend-dot"></i>Actividad detectada</span><span id="radar-cells">0 celdas cercanas</span></div>
+  <p class="radar-note">Visualización conceptual de actividad y lecturas recientes. No representa posiciones físicas ni trayectorias reales: el LiDAR 8×8 no proporciona coordenadas suficientes para ello.</p>
+ </article>
 </section>
 <section class="lower">
  <article class="panel">
-  <div class="panel-head"><h2>Historial de movimiento</h2><span class="subhead">EVENTOS DE ESTA SESIÓN</span></div>
-  <div id="movement-history" class="timeline"><p class="empty">Todavía no hay movimientos registrados.</p></div>
+  <div class="panel-head"><h2 class="section-title">Registro de cruces</h2><span class="eyebrow">EVENTOS RECIBIDOS</span></div>
+  <div id="movement-history" class="timeline"><p class="empty">Esperando entradas y salidas…</p></div>
  </article>
  <article class="panel">
-  <div class="panel-head"><h2>Actividad · últimas 24 h</h2><span class="subhead">EVENTOS DEL SERVIDOR</span></div>
-  <div id="activity-chart"></div>
-  <div class="panel-head" style="margin-top:18px"><h2>Eventos del sistema</h2><span class="subhead">AWS · PERSISTIDOS</span></div>
-  <div class="table-wrap"><table><thead><tr><th>Hora</th><th>Dispositivo</th><th>Tipo</th><th>Distancia</th></tr></thead><tbody id="server-events"></tbody></table></div>
-  <p class="empty" id="server-empty" hidden>Sin eventos registrados en AWS.</p>
+  <div class="panel-head"><h2 class="section-title">Flujo de las últimas 24 horas</h2><span class="eyebrow">POR HORA</span></div>
+  <div id="activity-chart"><p class="empty">Sin actividad registrada.</p></div>
+  <div class="chart-legend"><span><i style="background:var(--green)"></i>Entradas</span><span><i style="background:var(--red)"></i>Salidas</span></div>
  </article>
 </section>
-<section class="panel" style="margin-bottom:14px">
- <div class="panel-head"><h2>Diagnóstico del sensor</h2><div class="tabs"><button id="tab-spatial" class="active" type="button">VISTA ESPACIAL</button><button id="tab-heat" type="button">MATRIZ 8×8</button></div></div>
- <div id="heat-panel" hidden><div id="heat" class="heat"></div><p class="visual-note" style="text-align:center">Vista de diagnóstico de las lecturas originales. No representa entidades clasificadas.</p></div>
- <div id="spatial-help" class="subhead">Conteo experimental por cruce lateral. El LiDAR 8×8 no identifica personas; valida los resultados con conteo manual.</div>
+<section class="panel" style="margin-bottom:15px">
+ <div class="panel-head"><h2 class="section-title">Eventos recientes del sistema</h2><span class="eyebrow">HISTORIAL PERSISTIDO EN AWS</span></div>
+ <div class="table-wrap"><table><thead><tr><th>Hora</th><th>Dispositivo</th><th>Evento</th><th>Distancia</th></tr></thead><tbody id="server-events"></tbody></table></div>
+ <p class="empty" id="server-empty" hidden>Sin eventos registrados.</p>
 </section>
-<div class="footer"><span>PROXISENSE · LIDAR 8×8</span><span>Actualización del panel cada 2 segundos · objetivo de captura 10 ms (100 Hz), limitado por el sensor</span></div>
+<section class="panel">
+ <div class="panel-head"><h2 class="section-title">Estado técnico</h2><span class="eyebrow">DIAGNÓSTICO</span></div>
+ <div class="diagnostics">
+  <div class="diag"><span>Dispositivo</span><strong id="diag-device">—</strong></div>
+  <div class="diag"><span>Última comunicación</span><strong id="diag-last-seen">—</strong></div>
+  <div class="diag"><span>Distancia mínima</span><strong id="diag-distance">—</strong></div>
+  <div class="diag"><span>Celdas cercanas</span><strong id="diag-cells">—</strong></div>
+  <div class="diag"><span>Frecuencia real</span><strong id="diag-rate">—</strong></div>
+  <div class="diag"><span>Estado de conexión</span><strong id="diag-connection">—</strong></div>
+ </div>
+</section>
+<div class="footer"><span>PROXISENSE · LIDAR 8×8</span><span>Panel actualizado cada 2 segundos · conteo experimental</span></div>
 </main>
 <script>
 "use strict";
-const NEAR_MM=1500, MAX_MM=4000, SVG_NS="http://www.w3.org/2000/svg";
-let state=null, selectedId=null, nextId=1, tracks=[], lastFrameKey="", movementHistory=[];
-try{movementHistory=JSON.parse(sessionStorage.getItem("px-movement-history")||"[]");if(!Array.isArray(movementHistory))movementHistory=[];}catch{movementHistory=[];}
+const CAPACITY=40,MAX_MM=4000;
+let state=null,sessionEvents=[];
 const $=id=>document.getElementById(id);
 const node=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const clear=n=>{while(n.firstChild)n.removeChild(n.firstChild);};
 const fmtMM=v=>v==null?"—":Math.round(v)+" mm";
 const fmtClock=v=>new Date(v).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-function svgEl(tag,attrs={},text){const n=document.createElementNS(SVG_NS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;return n;}
-function getDevice(){if(!state||!state.devices.length)return null;return state.devices.find(d=>d.online&&d.frame)||state.devices.find(d=>d.frame)||state.devices[0];}
-function validFrame(frame){return Array.isArray(frame)&&frame.length===64&&frame.some(v=>Number.isFinite(v)&&v>0&&v<MAX_MM);}
-function clusterFrame(frame){
- const active=frame.map((v,i)=>Number.isFinite(v)&&v>0&&v<=NEAR_MM?i:-1).filter(i=>i>=0),set=new Set(active),seen=new Set(),groups=[];
- for(const start of active){if(seen.has(start))continue;const stack=[start],cells=[];seen.add(start);
-  while(stack.length){const i=stack.pop();cells.push(i);const r=Math.floor(i/8),c=i%8;
-   for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(!dr&&!dc)continue;const rr=r+dr,cc=c+dc;if(rr<0||rr>7||cc<0||cc>7)continue;const j=rr*8+cc;if(!set.has(j)||seen.has(j))continue;if(Math.abs(frame[j]-frame[i])>650)continue;seen.add(j);stack.push(j);}
-  }
-  if(cells.length>=1){const vals=cells.map(i=>frame[i]);groups.push({row:cells.reduce((s,i)=>s+Math.floor(i/8),0)/cells.length,col:cells.reduce((s,i)=>s+i%8,0)/cells.length,distance:vals.reduce((a,b)=>a+b,0)/vals.length,cells:cells.length,nearest:Math.min(...vals)});}
- }
- return groups;
+function getDevice(){if(!state||!state.devices.length)return null;return state.devices.find(d=>d.online)||state.devices[0];}
+function renderMetrics(d){
+ const online=!!d?.online,occupancy=Number(d?.occupancy??0),inside=Math.max(0,Math.min(occupancy,CAPACITY)),percent=inside/CAPACITY;
+ $("metric-occupancy").textContent=occupancy;$("metric-in").textContent=d?.people_in??0;$("metric-out").textContent=d?.people_out??0;$("metric-rate").textContent=d?.sample_hz==null?"—":Number(d.sample_hz).toFixed(1)+" Hz";
+ $("occupancy-number").textContent=occupancy;$("flow-in").textContent=d?.people_in??0;$("flow-out").textContent=d?.people_out??0;
+ $("gauge-progress").setAttribute("stroke-dashoffset",String(496-(496*percent)));$("gauge-percent").textContent=Math.round(percent*100)+"%";
+ $("device-status").textContent=online?"SENSOR EN LÍNEA":"SIN SEÑAL";$("device-status").className="status"+(online?"":" bad");$("updated").textContent="Actualizado "+new Date().toLocaleTimeString();
+ $("device-name").textContent="DISPOSITIVO "+(d?.device||"—").toUpperCase();$("diag-device").textContent=d?.device||"—";$("diag-last-seen").textContent=d?d.seconds_ago+" s":"—";$("diag-distance").textContent=fmtMM(d?.nearest_mm);$("diag-cells").textContent=d?.cells_near??"—";$("diag-rate").textContent=d?.sample_hz==null?"—":Number(d.sample_hz).toFixed(1)+" Hz";$("diag-connection").textContent=online?"EN LÍNEA":"SIN SEÑAL";
+ $("radar-state").textContent=online?"LECTURA ACTIVA":"ESPERANDO SENSOR";$("radar-cells").textContent=(d?.cells_near??0)+" celdas cercanas";
 }
-function addMovement(type,track,detail){const entry={id:Date.now()+"-"+Math.random().toString(16).slice(2,7),time:new Date().toISOString(),type,entity:"ENTIDAD "+String(track.id).padStart(2,"0"),detail};movementHistory.unshift(entry);movementHistory=movementHistory.slice(0,80);try{sessionStorage.setItem("px-movement-history",JSON.stringify(movementHistory));}catch{}}
-function updateTracks(detections){
- const now=Date.now();for(const t of tracks)t.missed++;
- const pairs=[];tracks.forEach((t,ti)=>detections.forEach((d,di)=>{const dc=Math.abs(t.col-d.col),dd=Math.abs(t.distance-d.distance);if(dc<=1.8&&dd<=650)pairs.push({score:dc/1.8+dd/650,ti,di});}));
- const usedT=new Set(),usedD=new Set();pairs.sort((a,b)=>a.score-b.score).forEach(p=>{if(usedT.has(p.ti)||usedD.has(p.di))return;const t=tracks[p.ti],d=detections[p.di],old={col:t.col,row:t.row,distance:t.distance};t.col=t.col*.55+d.col*.45;t.row=t.row*.55+d.row*.45;t.distance=t.distance*.55+d.distance*.45;t.nearest=d.nearest;t.cells=d.cells;t.missed=0;t.lastSeen=now;t.samples++;t.moving=Math.abs(t.col-old.col)>.35||Math.abs(t.distance-old.distance)>170;if(t.moving&&now-t.lastMovementEvent>2500){addMovement("move",t,"Cambio de posición estimada");t.lastMovementEvent=now;}usedT.add(p.ti);usedD.add(p.di);});
- detections.forEach((d,i)=>{if(usedD.has(i))return;const t={id:nextId++,...d,missed:0,lastSeen:now,samples:1,moving:false,lastMovementEvent:0};tracks.push(t);addMovement("new",t,"Nueva agrupación espacial detectada");});
- const kept=[];for(const t of tracks){if(t.missed>3){addMovement("lost",t,"La agrupación dejó de estar visible");if(selectedId===t.id)selectedId=null;}else kept.push(t);}tracks=kept;
+function renderRadar(d){
+ const box=$("radar-points");clear(box);const count=Math.max(0,Math.min(12,Number(d?.cells_near||0)));
+ if(!count){box.appendChild(node("title","", "Sin actividad cercana registrada"));return;}
+ // Los puntos son un indicador abstracto de intensidad, no ubicaciones medidas.
+ for(let i=0;i<count;i++){const angle=(i*137.5-90)*Math.PI/180,r=28+(i%4)*25,x=180+Math.cos(angle)*r,y=180+Math.sin(angle)*r,c=document.createElementNS("http://www.w3.org/2000/svg","circle");c.setAttribute("cx",x.toFixed(1));c.setAttribute("cy",y.toFixed(1));c.setAttribute("r",i%3===0?"5":"3.5");c.setAttribute("fill",i%4===0?"#34d399":"#93c5fd");c.setAttribute("opacity",String(.55+(i%4)*.1));if(i%3===0)c.setAttribute("class","radar-pulse");box.appendChild(c);}
 }
-function drawSpatial(device){
- const svg=$("spatial-svg");clear(svg);const W=760,H=430,cx=380,base=385,frame=device&&device.frame;
- // background grid and range arcs
- svg.appendChild(svgEl("rect",{x:0,y:0,width:W,height:H,fill:"#08110d"}));
- for(let x=70;x<=690;x+=40)svg.appendChild(svgEl("line",{x1:x,y1:20,x2:x,y2:base,stroke:"#14291e","stroke-width":1}));
- for(let y=65;y<=365;y+=50)svg.appendChild(svgEl("line",{x1:45,y1:y,x2:715,y2:y,stroke:"#14291e","stroke-width":1}));
- [1000,2000,3000,4000].forEach(mm=>{const y=base-mm/MAX_MM*300;svg.appendChild(svgEl("line",{x1:75,y1:y,x2:685,y2:y,stroke:"#294333","stroke-dasharray":"4 7"}));svg.appendChild(svgEl("text",{x:82,y:y-5,fill:"#779181","font-size":10},mm/1000+" m"));});
- svg.appendChild(svgEl("line",{x1:cx,y1:28,x2:cx,y2:base,stroke:"#3b624a","stroke-dasharray":"3 6"}));
- svg.appendChild(svgEl("path",{d:"M 310 34 L 450 34",stroke:"#63f59a","stroke-width":3,"stroke-linecap":"round"}));
- svg.appendChild(svgEl("text",{x:cx,y:20,"text-anchor":"middle",fill:"#8eaa98","font-size":10}, "LÍMITE DEL CAMPO DE VISIÓN"));
- // Sensor icon
- svg.appendChild(svgEl("rect",{x:cx-23,y:base+3,width:46,height:22,rx:6,fill:"#163b27",stroke:"#63f59a"}));
- svg.appendChild(svgEl("text",{x:cx,y:base+18,"text-anchor":"middle",fill:"#63f59a","font-size":10}, "LIDAR"));
- if(!frame||!validFrame(frame)){svg.appendChild(svgEl("text",{x:cx,y:210,"text-anchor":"middle",fill:"#82988a","font-size":14},"Esperando matriz LiDAR 8×8"));return;}
- // Render each valid cell as a point; horizontal axis is relative column, vertical axis is measured distance.
- frame.forEach((v,i)=>{if(!(v>0&&v<MAX_MM))return;const row=Math.floor(i/8),col=i%8,x=cx+(col-3.5)*72+(row-3.5)*7,y=base-v/MAX_MM*300;const near=v<=NEAR_MM;svg.appendChild(svgEl("circle",{cx:x,cy:y,r:near?5:3.2,fill:near?"#ff6575":"#47745a",opacity:near?.95:.48,stroke:near?"#ffd2d6":"none","stroke-width":1}));});
- tracks.forEach(t=>{const x=cx+(t.col-3.5)*72+(t.row-3.5)*7,y=base-t.distance/MAX_MM*300;const chosen=t.id===selectedId;svg.appendChild(svgEl("circle",{cx:x,cy:y,r:chosen?18:14,fill:"none",stroke:chosen?"#79baff":"#63f59a","stroke-width":chosen?2.5:1.5,"stroke-dasharray":chosen?"":"3 3"}));svg.appendChild(svgEl("circle",{cx:x,cy:y,r:3.5,fill:chosen?"#79baff":"#63f59a"}));svg.appendChild(svgEl("text",{x:x+17,y:y-13,fill:chosen?"#a9d2ff":"#a5ffc3","font-size":11,"font-weight":700},"E"+String(t.id).padStart(2,"0")));});
- svg.appendChild(svgEl("text",{x:cx,y:418,"text-anchor":"middle",fill:"#82988a","font-size":10},"SENSOR · DISTANCIA EN PROFUNDIDAD ↑"));
+function renderEvents(){
+ const rows=(state?.events||[]).filter(e=>e.kind==="count_in"||e.kind==="count_out");
+ const box=$("movement-history");clear(box);
+ if(!rows.length){box.appendChild(node("p","empty","Todavía no hay cruces registrados en AWS."));return;}
+ rows.slice(0,30).forEach(e=>{const isIn=e.kind==="count_in",row=node("div","event"),time=node("time","",fmtClock(e.ts)),dot=node("span","dot "+(isIn?"":"out")),body=node("div","");body.appendChild(node("div","event-title",(isIn?"↑ ENTRADA":"↓ SALIDA")+" · "+e.device));body.appendChild(node("div","event-desc",e.message||"Cruce detectado"+(e.distance_mm!=null?" a "+fmtMM(e.distance_mm):"")));row.append(time,dot,body);box.appendChild(row);});
+ const body=$("server-events");clear(body);$("server-empty").hidden=rows.length>0;
+ (state?.events||[]).slice(0,10).forEach(e=>{const tr=node("tr");const label=e.kind==="count_in"?"ENTRADA":e.kind==="count_out"?"SALIDA":e.kind==="alert"?"ALERTA":e.kind==="presence"?"PRESENCIA":"INFO";tr.append(node("td","",fmtClock(e.ts)),node("td","",e.device),node("td","",label),node("td","",fmtMM(e.distance_mm)));body.appendChild(tr);});
 }
-function renderEntities(){
- const box=$("entity-list");clear(box);$("track-count").textContent=tracks.length+" TRACKS";$("metric-entities").textContent=tracks.length;
- if(!tracks.length){box.appendChild(node("p","empty","No hay entidades activas dentro del umbral de detección."));$("entity-detail").textContent="Las entidades aparecerán cuando existan agrupaciones de celdas cercanas.";return;}
- tracks.forEach(t=>{const item=node("div","entity"+(selectedId===t.id?" selected":""));item.tabIndex=0;item.setAttribute("role","button");item.appendChild(node("div","entity-top"));const top=item.firstChild;top.appendChild(node("span","entity-name","ENTIDAD "+String(t.id).padStart(2,"0")));top.appendChild(node("span","tag"+(t.moving?"":" warn"),t.moving?"EN MOVIMIENTO":"ESTABLE"));const meta=node("div","entity-meta");[["Distancia",fmtMM(t.nearest)],["Celdas",String(t.cells)],["Tiempo",Math.max(0,Math.round((Date.now()-t.lastSeen)/1000))+" s"],["Seguimiento",t.samples+" muestras"]].forEach(([k,v])=>{const d=node("div","",k);d.appendChild(node("b","",v));meta.appendChild(d);});item.appendChild(meta);item.addEventListener("click",()=>{selectedId=t.id;renderEntities();drawSpatial(getDevice());});item.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();item.click();}});box.appendChild(item);});
- const t=tracks.find(x=>x.id===selectedId)||tracks[0];if(!selectedId)selectedId=t.id;$("entity-detail").innerHTML="";[["Identificador","ENTIDAD "+String(t.id).padStart(2,"0")],["Distancia media",fmtMM(t.distance)],["Distancia mínima",fmtMM(t.nearest)],["Centro relativo","columna "+(t.col+1).toFixed(1)+" / 8"],["Antigüedad de seguimiento",Math.max(0,Math.round((Date.now()-t.lastSeen)/1000))+" s"]].forEach(([k,v])=>{const line=node("div","",k+": ");line.appendChild(node("strong","",v));$("entity-detail").appendChild(line);});
+function renderActivity(){
+ const box=$("activity-chart");clear(box);const hours=state?.hourly||[],max=Math.max(1,...hours.map(h=>(h.entries||0)+(h.exits||0)));
+ if(!hours.length||hours.every(h=>!(h.entries||h.exits))){box.appendChild(node("p","empty","Sin entradas o salidas registradas en las últimas 24 horas."));return;}
+ const ns="http://www.w3.org/2000/svg",svg=document.createElementNS(ns,"svg");svg.setAttribute("viewBox","0 0 600 190");svg.setAttribute("class","chart");svg.setAttribute("role","img");svg.setAttribute("aria-label","Entradas y salidas por hora");
+ for(let i=0;i<24;i++){const h=hours[i]||{},x=i*25+4,w=8,a=(h.entries||0)/max*135,b=(h.exits||0)/max*135;for(const [v,color,offset] of [[a,"#34d399",0],[b,"#fb7185",9]]){const rect=document.createElementNS(ns,"rect");rect.setAttribute("x",x+offset);rect.setAttribute("y",158-v);rect.setAttribute("width",w);rect.setAttribute("height",Math.max(1,v));rect.setAttribute("rx",2);rect.setAttribute("fill",color);svg.appendChild(rect);}}
+ const axis=document.createElementNS(ns,"line");axis.setAttribute("x1",0);axis.setAttribute("x2",600);axis.setAttribute("y1",159);axis.setAttribute("y2",159);axis.setAttribute("stroke","#34465e");svg.appendChild(axis);
+ [0,6,12,18,23].forEach(i=>{const t=document.createElementNS(ns,"text");t.setAttribute("x",i*25+8);t.setAttribute("y",179);t.setAttribute("fill","#91a1b7");t.setAttribute("font-size","10");t.textContent=hours[i]?.hour_start?new Date(hours[i].hour_start).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):"";svg.appendChild(t);});
+ box.appendChild(svg);
 }
-function renderMovement(){const box=$("movement-history");clear(box);$("metric-events").textContent=movementHistory.length;if(!movementHistory.length){box.appendChild(node("p","empty","Todavía no hay movimientos registrados."));return;}movementHistory.slice(0,35).forEach(e=>{const row=node("div","event"),time=node("time","",fmtClock(e.time)),dot=node("span","dot "+(e.type==="move"?"move":e.type==="lost"?"lost":"")),body=node("div","");body.appendChild(node("div","event-title",e.entity+" · "+(e.type==="new"?"DETECCIÓN":e.type==="move"?"MOVIMIENTO":"SEÑAL PERDIDA")));body.appendChild(node("div","event-desc",e.detail));row.append(time,dot,body);box.appendChild(row);});}
-function renderHeat(device){const box=$("heat");clear(box);if(!device||!validFrame(device.frame)){box.appendChild(node("p","empty","No hay una matriz completa disponible."));return;}device.frame.forEach(v=>{const valid=v>0&&v<MAX_MM,c=node("div","cell"+(valid?"":" none"),valid?Math.round(v):"—");if(valid){const hue=Math.max(0,125-v/MAX_MM*125);c.style.background="hsl("+hue+" 48% 48%)";}box.appendChild(c);});}
-function renderServerEvents(){const body=$("server-events");clear(body);$("server-empty").hidden=!!(state&&state.events.length);(state?.events||[]).slice(0,8).forEach(e=>{const tr=node("tr");tr.append(node("td","",fmtClock(e.ts)),node("td","",e.device),node("td","",e.kind==="count_in"?"ENTRADA":e.kind==="count_out"?"SALIDA":e.kind==="alert"?"ALERTA":e.kind==="presence"?"PRESENCIA":"INFO"),node("td","",fmtMM(e.distance_mm)));body.appendChild(tr);});}
-function renderActivity(){const box=$("activity-chart");clear(box);const hours=state?.hourly||[],total=h=>h.alerts+h.presences+(h.entries||0)+(h.exits||0),max=Math.max(1,...hours.map(total));if(!hours.length||hours.every(h=>total(h)===0)){box.appendChild(node("p","empty","Sin eventos registrados en las últimas 24 horas."));return;}const svg=svgEl("svg",{viewBox:"0 0 500 145",class:"chart",role:"img","aria-label":"Actividad por hora"});hours.forEach((h,i)=>{const v=h.alerts+h.presences+(h.entries||0)+(h.exits||0),bw=500/24-4,height=v/max*105;svg.appendChild(svgEl("rect",{x:i*500/24+2,y:120-height,width:bw,height:height,rx:3,fill:h.alerts?"#ff6575":"#f6bd60",opacity:.85}));});svg.appendChild(svgEl("line",{x1:0,y1:121,x2:500,y2:121,stroke:"#294333"}));box.appendChild(svg);}
-function renderMetrics(device){$("metric-in").textContent=device?.people_in??0;$("metric-out").textContent=device?.people_out??0;$("metric-occupancy").textContent=device?.occupancy??0;$("metric-rate").textContent=device?.sample_hz==null?"—":Number(device.sample_hz).toFixed(1)+" Hz";const online=!!(device?.online);$("device-status").textContent=online?"SISTEMA EN LÍNEA":"SIN SEÑAL";$("device-status").className="status"+(online?"":" bad");$("updated").textContent="Actualizado "+new Date().toLocaleTimeString();}
-async function refresh(){try{const response=await fetch("/api/state",{cache:"no-store"});if(!response.ok)throw Error("HTTP "+response.status);state=await response.json();const device=getDevice();renderMetrics(device);renderServerEvents();renderActivity();if(device&&validFrame(device.frame)){const key=device.device+":"+device.frame.join(",");if(key!==lastFrameKey){lastFrameKey=key;updateTracks(clusterFrame(device.frame));}}else{tracks=[];selectedId=null;}renderEntities();drawSpatial(device);renderMovement();renderHeat(device);}catch(error){$("device-status").textContent="ERROR DE CONEXIÓN";$("device-status").className="status bad";$("updated").textContent="No se pudo consultar AWS";}}
-$("tab-heat").addEventListener("click",()=>{$("tab-heat").classList.add("active");$("tab-spatial").classList.remove("active");$("heat-panel").hidden=false;$("spatial-help").hidden=true;});
-$("tab-spatial").addEventListener("click",()=>{$("tab-spatial").classList.add("active");$("tab-heat").classList.remove("active");$("heat-panel").hidden=true;$("spatial-help").hidden=false;});
+async function refresh(){
+ try{const response=await fetch("/api/state",{cache:"no-store"});if(!response.ok)throw Error("HTTP "+response.status);state=await response.json();const d=getDevice();renderMetrics(d);renderRadar(d);renderEvents();renderActivity();}
+ catch(error){$("device-status").textContent="ERROR DE CONEXIÓN";$("device-status").className="status bad";$("updated").textContent="No se pudo consultar AWS";}
+}
 refresh();setInterval(refresh,2000);
 </script>
 </body>
