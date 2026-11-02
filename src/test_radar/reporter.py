@@ -63,6 +63,8 @@ class Reporter:
         payload = {"device": self.device, "nearest_mm": None if nearest_mm is None else round(float(nearest_mm), 1), "cells_near": cells_near}
         if frame is not None:
             payload["frame"] = [round(float(v)) for v in np.asarray(frame).reshape(-1)]
+        if stats:
+            payload.update(stats)
         with self._lock:
             self._heartbeat = payload
         self._wake.set()
