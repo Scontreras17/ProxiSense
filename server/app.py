@@ -185,13 +185,13 @@ def state() -> JSONResponse:
              "silenced": bool(row["silenced"]), "message": row["message"]}
             for row in conn.execute("SELECT * FROM events ORDER BY ts DESC LIMIT ?", (RECENT_EVENTS,))
         ]
-        buckets = [{"alerts": 0, "presences": 0} for _ in range(HOURS)]
+        buckets = [{"alerts": 0, "presences": 0, "entries": 0, "exits": 0} for _ in range(HOURS)]
         for row in conn.execute(
             "SELECT CAST((? - ts) / 3600 AS INTEGER) AS age, kind, COUNT(*) AS n FROM events "
-            "WHERE ts > ? AND kind IN ('alert','presence') GROUP BY age, kind", (now, now - HOURS * 3600)
+            "WHERE ts > ? AND kind IN ('alert','presence','count_in','count_out') GROUP BY age, kind", (now, now - HOURS * 3600)
         ):
             if 0 <= row["age"] < HOURS:
-                buckets[HOURS - 1 - row["age"]]["alerts" if row["kind"] == "alert" else "presences"] += row["n"]
+                buckets[HOURS - 1 - row["age"]][{"alert": "alerts", "presence": "presences", "count_in": "entries", "count_out": "exits"}[row["kind"]]] += row["n"]
     for index, bucket in enumerate(buckets):
         bucket["hour_start"] = _iso(now - (HOURS - index) * 3600)
     return JSONResponse({"now": _iso(now), "online_seconds": ONLINE_SECONDS, "devices": devices, "events": events, "hourly": buckets},
