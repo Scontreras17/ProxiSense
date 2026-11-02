@@ -51,13 +51,24 @@ def connect() -> Iterator[sqlite3.Connection]:
             """
             CREATE TABLE IF NOT EXISTS devices (
                 device TEXT PRIMARY KEY, last_seen REAL NOT NULL,
-                nearest_mm REAL, cells_near INTEGER, frame TEXT);
+                nearest_mm REAL, cells_near INTEGER, frame TEXT,
+                sample_hz REAL, people_in INTEGER NOT NULL DEFAULT 0,
+                people_out INTEGER NOT NULL DEFAULT 0, occupancy INTEGER NOT NULL DEFAULT 0);
             CREATE TABLE IF NOT EXISTS events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT, ts REAL NOT NULL, device TEXT NOT NULL,
                 kind TEXT NOT NULL, distance_mm REAL, silenced INTEGER NOT NULL DEFAULT 0, message TEXT);
             CREATE INDEX IF NOT EXISTS events_ts ON events(ts);
             """
         )
+        columns = {row["name"] for row in conn.execute("PRAGMA table_info(devices)")}
+        for name, declaration in (
+            ("sample_hz", "REAL"),
+            ("people_in", "INTEGER NOT NULL DEFAULT 0"),
+            ("people_out", "INTEGER NOT NULL DEFAULT 0"),
+            ("occupancy", "INTEGER NOT NULL DEFAULT 0"),
+        ):
+            if name not in columns:
+                conn.execute("ALTER TABLE devices ADD COLUMN " + name + " " + declaration)
         yield conn
         conn.commit()
     finally:
@@ -97,11 +108,15 @@ class Heartbeat(BaseModel):
     frame: list[float] | None = Field(default=None, min_length=64, max_length=64, description="matriz 8x8 por filas, en mm")
     nearest_mm: float | None = None
     cells_near: int | None = Field(default=None, ge=0, le=64)
+    sample_hz: float | None = Field(default=None, ge=0, le=10000)
+    people_in: int | None = Field(default=None, ge=0)
+    people_out: int | None = Field(default=None, ge=0)
+    occupancy: int | None = Field(default=None, ge=0)
 
 
 class Event(BaseModel):
     device: str = Field(min_length=1, max_length=64)
-    kind: str = Field(pattern="^(alert|presence|info)$", description="alert = aviso enviado, presence = detectada pero silenciada, info = otro")
+    kind: str = Field(pattern="^(alert|presence|info|count_in|count_out)$", description="alert/presence/info o cruce de entrada/salida")
     distance_mm: float | None = None
     silenced: bool = False
     message: str | None = Field(default=None, max_length=300)
@@ -115,10 +130,16 @@ def heartbeat(body: Heartbeat) -> dict[str, bool]:
     frame = json.dumps([round(v) for v in body.frame]) if body.frame is not None else None
     with connect() as conn:
         conn.execute(
-            """INSERT INTO devices(device, last_seen, nearest_mm, cells_near, frame) VALUES(?,?,?,?,?)
+            """INSERT INTO devices(device, last_seen, nearest_mm, cells_near, frame, sample_hz, people_in, people_out, occupancy)
+               VALUES(?,?,?,?,?,?,?,?,?)
                ON CONFLICT(device) DO UPDATE SET last_seen=excluded.last_seen, nearest_mm=excluded.nearest_mm,
-               cells_near=excluded.cells_near, frame=COALESCE(excluded.frame, devices.frame)""",
-            (body.device, time.time(), body.nearest_mm, body.cells_near, frame),
+               cells_near=excluded.cells_near, frame=COALESCE(excluded.frame, devices.frame),
+               sample_hz=COALESCE(excluded.sample_hz, devices.sample_hz),
+               people_in=COALESCE(excluded.people_in, devices.people_in),
+               people_out=COALESCE(excluded.people_out, devices.people_out),
+               occupancy=COALESCE(excluded.occupancy, devices.occupancy)""",
+            (body.device, time.time(), body.nearest_mm, body.cells_near, frame,
+             body.sample_hz, body.people_in, body.people_out, body.occupancy),
         )
     return {"ok": True}
 
@@ -154,6 +175,8 @@ def state() -> JSONResponse:
                 "device": row["device"], "online": now - row["last_seen"] <= ONLINE_SECONDS,
                 "seconds_ago": round(now - row["last_seen"], 1), "nearest_mm": row["nearest_mm"],
                 "cells_near": row["cells_near"], "frame": json.loads(row["frame"]) if row["frame"] else None,
+                "sample_hz": row["sample_hz"], "people_in": row["people_in"],
+                "people_out": row["people_out"], "occupancy": row["occupancy"],
             }
             for row in conn.execute("SELECT * FROM devices ORDER BY device")
         ]
@@ -162,13 +185,13 @@ def state() -> JSONResponse:
              "silenced": bool(row["silenced"]), "message": row["message"]}
             for row in conn.execute("SELECT * FROM events ORDER BY ts DESC LIMIT ?", (RECENT_EVENTS,))
         ]
-        buckets = [{"alerts": 0, "presences": 0} for _ in range(HOURS)]
+        buckets = [{"alerts": 0, "presences": 0, "entries": 0, "exits": 0} for _ in range(HOURS)]
         for row in conn.execute(
             "SELECT CAST((? - ts) / 3600 AS INTEGER) AS age, kind, COUNT(*) AS n FROM events "
-            "WHERE ts > ? AND kind IN ('alert','presence') GROUP BY age, kind", (now, now - HOURS * 3600)
+            "WHERE ts > ? AND kind IN ('alert','presence','count_in','count_out') GROUP BY age, kind", (now, now - HOURS * 3600)
         ):
             if 0 <= row["age"] < HOURS:
-                buckets[HOURS - 1 - row["age"]]["alerts" if row["kind"] == "alert" else "presences"] += row["n"]
+                buckets[HOURS - 1 - row["age"]][{"alert": "alerts", "presence": "presences", "count_in": "entries", "count_out": "exits"}[row["kind"]]] += row["n"]
     for index, bucket in enumerate(buckets):
         bucket["hour_start"] = _iso(now - (HOURS - index) * 3600)
     return JSONResponse({"now": _iso(now), "online_seconds": ONLINE_SECONDS, "devices": devices, "events": events, "hourly": buckets},

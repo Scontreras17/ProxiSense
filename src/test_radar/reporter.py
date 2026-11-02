@@ -54,7 +54,7 @@ class Reporter:
             self._events.append(payload)
         self._wake.set()
 
-    def heartbeat(self, frame: np.ndarray | None, nearest_mm: float | None, cells_near: int | None) -> None:
+    def heartbeat(self, frame: np.ndarray | None, nearest_mm: float | None, cells_near: int | None, stats: dict | None = None) -> None:
         """Se puede llamar con cada lectura: solo se envia uno cada `heartbeat_seconds`."""
         now = time.monotonic()
         if now - self._last_heartbeat < self.heartbeat_seconds:
@@ -63,6 +63,8 @@ class Reporter:
         payload = {"device": self.device, "nearest_mm": None if nearest_mm is None else round(float(nearest_mm), 1), "cells_near": cells_near}
         if frame is not None:
             payload["frame"] = [round(float(v)) for v in np.asarray(frame).reshape(-1)]
+        if stats:
+            payload.update(stats)
         with self._lock:
             self._heartbeat = payload
         self._wake.set()

@@ -68,6 +68,15 @@ def parser() -> argparse.ArgumentParser:
     calibrate.add_argument("--end", default=None, type=float, help="Con --from-csv: segundo donde termina el tramo estable.")
     calibrate.add_argument("--output", default=BaselineConfig.path, help="Donde guardar el fondo.")
 
+    count = actions.add_parser("count", help="Conteo experimental de cruces en una puerta con LiDAR 8x8.")
+    _add_source_options(count, nested=True)
+    count.add_argument("--threshold", default=1800.0, type=float, help="Umbral de distancia en mm.")
+    count.add_argument("--entry-side", choices=("left", "right"), default="left", help="Lado desde el que se considera entrada.")
+    count.add_argument("--initial-occupancy", default=0, type=int, help="Ocupacion conocida al iniciar.")
+    count.add_argument("--target-ms", default=10.0, type=float, help="Intervalo objetivo entre muestras (10 ms = 100 Hz).")
+    count.add_argument("--server", metavar="URL", help="Servidor AWS; tambien PROXISENSE_SERVER_URL en .env.")
+    count.add_argument("--device", metavar="NOMBRE", help="Nombre del dispositivo en el dashboard.")
+    
     monitor = actions.add_parser("monitor", help="Servicio de presencia con alertas por Telegram.")
     _add_source_options(monitor, nested=True); _add_baseline_options(monitor)
     monitor.add_argument("--distance", default=MonitorConfig.distance_mm, type=float, help="Distancia de deteccion en mm.")
@@ -146,6 +155,50 @@ def main(argv: list[str] | None = None) -> None:
             with _source_factory(args, 0.2)() as sensor:
                 total = record_csv(sensor, Path(args.output), args.duration)
             print(f"Registro terminado. Lecturas guardadas: {total}. Archivo: {args.output}")
+        elif args.action == "count":
+            from .people_counter import DoorwayCounter
+            from .reporter import Reporter
+            counter = DoorwayCounter(threshold_mm=args.threshold, entry_side=args.entry_side,
+                                     initial_occupancy=args.initial_occupancy)
+            reporter = Reporter.from_env(args.server, args.device)
+            period = max(0.0, args.target_ms / 1000.0)
+            logging.info("Conteo experimental iniciado: objetivo %.1f ms (%.1f Hz), lado de entrada %s.",
+                         args.target_ms, 1000.0 / period if period else 0.0, args.entry_side)
+            if reporter is not None:
+                logging.info("Enviando conteos a %s como '%s'.", reporter.url, reporter.device)
+            last_print = time.monotonic()
+            with _source_factory(args, min(0.01, period or 0.01))() as sensor:
+                while True:
+                    sample_started = time.monotonic()
+                    previous_frame = getattr(sensor, "frames_received", None)
+                    frame = sensor.read_rows(maximum_lines=8)
+                    current_frame = getattr(sensor, "frames_received", None)
+                    if previous_frame is not None and current_frame == previous_frame:
+                        wait = period - (time.monotonic() - sample_started)
+                        if wait > 0:
+                            time.sleep(wait)
+                        continue
+                    crossing = counter.update(frame)
+                    valid = frame[(frame > 0) & (frame < 4000)]
+                    nearest = float(valid.min()) if valid.size else None
+                    if crossing:
+                        direction = crossing["direction"]
+                        logging.info("Cruce %s | entradas=%d salidas=%d ocupacion=%d",
+                                     direction, crossing["people_in"], crossing["people_out"], crossing["occupancy"])
+                        if reporter is not None:
+                            reporter.event("count_in" if direction == "in" else "count_out", nearest,
+                                           message=f"Entradas {crossing['people_in']} · salidas {crossing['people_out']} · ocupacion {crossing['occupancy']}")
+                    if reporter is not None:
+                        reporter.heartbeat(frame, nearest, int(counter.snapshot.active_cells), stats=counter.telemetry())
+                    now = time.monotonic()
+                    if now - last_print >= 1.0:
+                        stats = counter.telemetry()
+                        logging.info("Muestreo real %.1f Hz | entradas %d | salidas %d | ocupacion %d",
+                                     stats["sample_hz"], stats["people_in"], stats["people_out"], stats["occupancy"])
+                        last_print = now
+                    wait = period - (time.monotonic() - sample_started)
+                    if wait > 0:
+                        time.sleep(wait)
         elif args.action == "monitor":
             from .monitor import TelegramNotifier, run_monitor
             from .reporter import Reporter

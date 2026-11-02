@@ -32,6 +32,8 @@ class LidarSensor:
         self.config = config
         self.connection: serial.Serial | None = None
         self._latest_matrix = np.full((8, 8), 4000.0)
+        self._rows_in_frame: set[int] = set()
+        self.frames_received = 0
 
     def open(self) -> None:
         self.connection = serial.Serial(
@@ -72,4 +74,8 @@ class LidarSensor:
             if parsed is not None:
                 row, values = parsed
                 self._latest_matrix[row] = values
+                self._rows_in_frame.add(row)
+                if len(self._rows_in_frame) == 8:
+                    self.frames_received += 1
+                    self._rows_in_frame.clear()
         return self._latest_matrix.copy()
