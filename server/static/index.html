@@ -25,23 +25,24 @@ h2{font:600 11px var(--mono);letter-spacing:.15em;text-transform:uppercase;color
 <body>
 <main>
 <header>
- <div class="brand"><div class="mark">P</div><div><h1>PROXISENSE</h1><small>SPATIAL MONITORING SYSTEM</small></div></div>
+ <div class="brand"><div class="mark">P</div><div><h1>PROXISENSE</h1><small>DOORWAY PEOPLE COUNTING · EXPERIMENTAL</small></div></div>
  <div class="header-right"><span id="device-status" class="status">CONECTANDO</span><span id="updated" class="subhead">Esperando datos</span></div>
 </header>
 <section class="metrics">
- <article class="metric"><div class="metric-label">Entidades activas</div><div class="metric-value" id="metric-entities">—</div><div class="metric-sub">Seguimiento temporal</div></article>
- <article class="metric"><div class="metric-label">Distancia mínima</div><div class="metric-value" id="metric-distance">—</div><div class="metric-sub">Lectura válida más cercana</div></article>
- <article class="metric"><div class="metric-label">Eventos de movimiento</div><div class="metric-value" id="metric-events">0</div><div class="metric-sub">En esta sesión del panel</div></article>
- <article class="metric"><div class="metric-label">Dispositivos</div><div class="metric-value" id="metric-devices">0</div><div class="metric-sub" id="metric-device-name">Sin dispositivo</div></article>
+ <article class="metric"><div class="metric-label">Entradas</div><div class="metric-value" id="metric-in">0</div><div class="metric-sub">Cruces detectados hacia dentro</div></article>
+ <article class="metric"><div class="metric-label">Salidas</div><div class="metric-value" id="metric-out">0</div><div class="metric-sub">Cruces detectados hacia fuera</div></article>
+ <article class="metric"><div class="metric-label">Ocupación estimada</div><div class="metric-value" id="metric-occupancy">0</div><div class="metric-sub">Entradas − salidas + inicial</div></article>
+ <article class="metric"><div class="metric-label">Frecuencia de muestreo</div><div class="metric-value" id="metric-rate">—</div><div class="metric-sub">Objetivo 100 Hz · lectura real</div></article>
+ <span id="metric-entities" hidden></span><span id="metric-distance" hidden></span><span id="metric-events" hidden></span><span id="metric-devices" hidden></span><span id="metric-device-name" hidden></span>
 </section>
 <section class="layout">
  <article class="panel">
-  <div class="panel-head"><h2>Vista espacial 2D</h2><span class="subhead" id="view-source">MATRIZ 8 × 8</span></div>
+  <div class="panel-head"><h2>Zona de paso · Vista espacial 2D</h2><span class="subhead" id="view-source">MATRIZ 8 × 8</span></div>
   <div class="visual" id="spatial-view"><svg id="spatial-svg" viewBox="0 0 760 430" role="img" aria-label="Vista espacial aproximada de las detecciones LiDAR"></svg></div>
   <p class="visual-note">Representación espacial estimada a partir de las 64 celdas. La posición lateral es relativa a la columna del sensor, no una coordenada física calibrada.</p>
  </article>
  <aside class="panel">
-  <div class="panel-head"><h2>Seguimiento de entidades</h2><span class="subhead" id="track-count">0 TRACKS</span></div>
+  <div class="panel-head"><h2>Detecciones en la zona</h2><span class="subhead" id="track-count">0 TRACKS</span></div>
   <div id="entity-list" class="entity-list"><p class="empty">Esperando una matriz LiDAR válida…</p></div>
   <div id="entity-detail" class="detail">Selecciona una entidad para consultar su seguimiento.</div>
  </aside>
@@ -62,9 +63,9 @@ h2{font:600 11px var(--mono);letter-spacing:.15em;text-transform:uppercase;color
 <section class="panel" style="margin-bottom:14px">
  <div class="panel-head"><h2>Diagnóstico del sensor</h2><div class="tabs"><button id="tab-spatial" class="active" type="button">VISTA ESPACIAL</button><button id="tab-heat" type="button">MATRIZ 8×8</button></div></div>
  <div id="heat-panel" hidden><div id="heat" class="heat"></div><p class="visual-note" style="text-align:center">Vista de diagnóstico de las lecturas originales. No representa entidades clasificadas.</p></div>
- <div id="spatial-help" class="subhead">La vista espacial y el seguimiento se calculan a partir de la matriz recibida del sensor.</div>
+ <div id="spatial-help" class="subhead">Conteo experimental por cruce lateral. El LiDAR 8×8 no identifica personas; valida los resultados con conteo manual.</div>
 </section>
-<div class="footer"><span>PROXISENSE · LIDAR 8×8</span><span>Actualización cada 2 segundos · Umbral inicial de detección: 1500 mm</span></div>
+<div class="footer"><span>PROXISENSE · LIDAR 8×8</span><span>Actualización del panel cada 2 segundos · objetivo de captura 10 ms (100 Hz), limitado por el sensor</span></div>
 </main>
 <script>
 "use strict";
@@ -124,9 +125,9 @@ function renderEntities(){
 }
 function renderMovement(){const box=$("movement-history");clear(box);$("metric-events").textContent=movementHistory.length;if(!movementHistory.length){box.appendChild(node("p","empty","Todavía no hay movimientos registrados."));return;}movementHistory.slice(0,35).forEach(e=>{const row=node("div","event"),time=node("time","",fmtClock(e.time)),dot=node("span","dot "+(e.type==="move"?"move":e.type==="lost"?"lost":"")),body=node("div","");body.appendChild(node("div","event-title",e.entity+" · "+(e.type==="new"?"DETECCIÓN":e.type==="move"?"MOVIMIENTO":"SEÑAL PERDIDA")));body.appendChild(node("div","event-desc",e.detail));row.append(time,dot,body);box.appendChild(row);});}
 function renderHeat(device){const box=$("heat");clear(box);if(!device||!validFrame(device.frame)){box.appendChild(node("p","empty","No hay una matriz completa disponible."));return;}device.frame.forEach(v=>{const valid=v>0&&v<MAX_MM,c=node("div","cell"+(valid?"":" none"),valid?Math.round(v):"—");if(valid){const hue=Math.max(0,125-v/MAX_MM*125);c.style.background="hsl("+hue+" 48% 48%)";}box.appendChild(c);});}
-function renderServerEvents(){const body=$("server-events");clear(body);$("server-empty").hidden=!!(state&&state.events.length);(state?.events||[]).slice(0,8).forEach(e=>{const tr=node("tr");tr.append(node("td","",fmtClock(e.ts)),node("td","",e.device),node("td","",e.kind==="alert"?"ALERTA":e.kind==="presence"?"PRESENCIA":"INFO"),node("td","",fmtMM(e.distance_mm)));body.appendChild(tr);});}
-function renderActivity(){const box=$("activity-chart");clear(box);const hours=state?.hourly||[],max=Math.max(1,...hours.map(h=>h.alerts+h.presences));if(!hours.length||hours.every(h=>h.alerts+h.presences===0)){box.appendChild(node("p","empty","Sin eventos registrados en las últimas 24 horas."));return;}const svg=svgEl("svg",{viewBox:"0 0 500 145",class:"chart",role:"img","aria-label":"Actividad por hora"});hours.forEach((h,i)=>{const v=h.alerts+h.presences,bw=500/24-4,height=v/max*105;svg.appendChild(svgEl("rect",{x:i*500/24+2,y:120-height,width:bw,height:height,rx:3,fill:h.alerts?"#ff6575":"#f6bd60",opacity:.85}));});svg.appendChild(svgEl("line",{x1:0,y1:121,x2:500,y2:121,stroke:"#294333"}));box.appendChild(svg);}
-function renderMetrics(device){$("metric-devices").textContent=state?.devices?.length||0;$("metric-device-name").textContent=device?device.device:"Sin dispositivo";$("metric-distance").textContent=fmtMM(device?.nearest_mm);const online=!!(device?.online);$("device-status").textContent=online?"SISTEMA EN LÍNEA":"SIN SEÑAL";$("device-status").className="status"+(online?"":" bad");$("updated").textContent="Actualizado "+new Date().toLocaleTimeString();}
+function renderServerEvents(){const body=$("server-events");clear(body);$("server-empty").hidden=!!(state&&state.events.length);(state?.events||[]).slice(0,8).forEach(e=>{const tr=node("tr");tr.append(node("td","",fmtClock(e.ts)),node("td","",e.device),node("td","",e.kind==="count_in"?"ENTRADA":e.kind==="count_out"?"SALIDA":e.kind==="alert"?"ALERTA":e.kind==="presence"?"PRESENCIA":"INFO"),node("td","",fmtMM(e.distance_mm)));body.appendChild(tr);});}
+function renderActivity(){const box=$("activity-chart");clear(box);const hours=state?.hourly||[],max=Math.max(1,...hours.map(h=>h.alerts+h.presences));if(!hours.length||hours.every(h=>h.alerts+h.presences===0)){box.appendChild(node("p","empty","Sin eventos registrados en las últimas 24 horas."));return;}const svg=svgEl("svg",{viewBox:"0 0 500 145",class:"chart",role:"img","aria-label":"Actividad por hora"});hours.forEach((h,i)=>{const v=h.alerts+h.presences+(h.entries||0)+(h.exits||0),bw=500/24-4,height=v/max*105;svg.appendChild(svgEl("rect",{x:i*500/24+2,y:120-height,width:bw,height:height,rx:3,fill:h.alerts?"#ff6575":"#f6bd60",opacity:.85}));});svg.appendChild(svgEl("line",{x1:0,y1:121,x2:500,y2:121,stroke:"#294333"}));box.appendChild(svg);}
+function renderMetrics(device){$("metric-in").textContent=device?.people_in??0;$("metric-out").textContent=device?.people_out??0;$("metric-occupancy").textContent=device?.occupancy??0;$("metric-rate").textContent=device?.sample_hz==null?"—":Number(device.sample_hz).toFixed(1)+" Hz";const online=!!(device?.online);$("device-status").textContent=online?"SISTEMA EN LÍNEA":"SIN SEÑAL";$("device-status").className="status"+(online?"":" bad");$("updated").textContent="Actualizado "+new Date().toLocaleTimeString();}
 async function refresh(){try{const response=await fetch("/api/state",{cache:"no-store"});if(!response.ok)throw Error("HTTP "+response.status);state=await response.json();const device=getDevice();renderMetrics(device);renderServerEvents();renderActivity();if(device&&validFrame(device.frame)){const key=device.device+":"+device.frame.join(",");if(key!==lastFrameKey){lastFrameKey=key;updateTracks(clusterFrame(device.frame));}}else{tracks=[];selectedId=null;}renderEntities();drawSpatial(device);renderMovement();renderHeat(device);}catch(error){$("device-status").textContent="ERROR DE CONEXIÓN";$("device-status").className="status bad";$("updated").textContent="No se pudo consultar AWS";}}
 $("tab-heat").addEventListener("click",()=>{$("tab-heat").classList.add("active");$("tab-spatial").classList.remove("active");$("heat-panel").hidden=false;$("spatial-help").hidden=true;});
 $("tab-spatial").addEventListener("click",()=>{$("tab-spatial").classList.add("active");$("tab-heat").classList.remove("active");$("heat-panel").hidden=true;$("spatial-help").hidden=false;});
