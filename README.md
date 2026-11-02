@@ -89,6 +89,23 @@ test-radar monitor --replay data/habitacion_vacia.csv --once --speed 4
 - Si se desconecta el cable USB, registra el error y reintenta cada cinco segundos.
 - El token de Telegram nunca aparece en los registros de error.
 
+### Conteo experimental de personas por puerta
+
+La nueva versión incorpora un contador de cruces para experimentar con el LiDAR 8×8 cerca de una puerta:
+
+```bash
+test-radar count --port COM3 --target-ms 10
+```
+
+El objetivo de captura es 10 ms (100 Hz), pero el programa informa la frecuencia real que entrega el sensor. Configura el sentido de entrada con `--entry-side left|right` y, si conoces la ocupación inicial, con `--initial-occupancy N`. El contador es experimental y no identifica personas; valida sus resultados con pruebas manuales. La guía de montaje y limitaciones está en [docs/people-counting.md](docs/people-counting.md).
+
+Pruebas unitarias del contador:
+
+```bash
+pip install -e .
+python -m unittest discover -s tests
+```
+
 ### Panel web en AWS (opcional)
 
 La carpeta `server/` contiene un servidor y un panel web (estado del sensor, mapa de calor, alertas y actividad de 24 h). Se instala en tu instancia Ubuntu siguiendo `server/README.md`. El monitor le envía los datos si defines `PROXISENSE_SERVER_URL` y `PROXISENSE_API_KEY` en el `.env`, o con `--server URL --device NOMBRE`. Si AWS no responde, el monitor y las alertas de Telegram siguen funcionando.
