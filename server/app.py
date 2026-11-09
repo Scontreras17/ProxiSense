@@ -130,20 +130,17 @@ def heartbeat(body: Heartbeat) -> dict[str, bool]:
     frame = json.dumps([round(v) for v in body.frame]) if body.frame is not None else None
     with connect() as conn:
         conn.execute(
-            # SQLite valida NOT NULL sobre la fila a insertar antes de resolver el conflicto,
-            # asi que el INSERT usa 0 por defecto y el UPDATE conserva el valor anterior (NULL = no vino).
             """INSERT INTO devices(device, last_seen, nearest_mm, cells_near, frame, sample_hz, people_in, people_out, occupancy)
-               VALUES(:device, :ts, :nearest_mm, :cells_near, :frame, :sample_hz,
-                      COALESCE(:people_in, 0), COALESCE(:people_out, 0), COALESCE(:occupancy, 0))
-               ON CONFLICT(device) DO UPDATE SET last_seen=:ts, nearest_mm=:nearest_mm,
-               cells_near=:cells_near, frame=COALESCE(:frame, devices.frame),
-               sample_hz=COALESCE(:sample_hz, devices.sample_hz),
-               people_in=COALESCE(:people_in, devices.people_in),
-               people_out=COALESCE(:people_out, devices.people_out),
-               occupancy=COALESCE(:occupancy, devices.occupancy)""",
-            {"device": body.device, "ts": time.time(), "nearest_mm": body.nearest_mm,
-             "cells_near": body.cells_near, "frame": frame, "sample_hz": body.sample_hz,
-             "people_in": body.people_in, "people_out": body.people_out, "occupancy": body.occupancy},
+               VALUES(?,?,?,?,?,?,COALESCE(?,0),COALESCE(?,0),COALESCE(?,0))
+               ON CONFLICT(device) DO UPDATE SET last_seen=excluded.last_seen, nearest_mm=excluded.nearest_mm,
+               cells_near=excluded.cells_near, frame=COALESCE(?, devices.frame),
+               sample_hz=COALESCE(?, devices.sample_hz),
+               people_in=COALESCE(?, devices.people_in),
+               people_out=COALESCE(?, devices.people_out),
+               occupancy=COALESCE(?, devices.occupancy)""",
+            (body.device, time.time(), body.nearest_mm, body.cells_near, frame,
+             body.sample_hz, body.people_in, body.people_out, body.occupancy,
+             frame, body.sample_hz, body.people_in, body.people_out, body.occupancy),
         )
     return {"ok": True}
 

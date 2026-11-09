@@ -49,7 +49,7 @@ Si el repositorio es privado, `git clone` te pedirá credenciales. En ese caso, 
 
 ```bash
 # Genera una clave larga para los dispositivos y anótala:
-openssl rand -hex 24
+openssl rand -hex 24 dc2685c77b48f55068b39a5a9b1fbc539fab93a7a384fe9d
 sudo nano /etc/proxisense.env
 ```
 
