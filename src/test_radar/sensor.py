@@ -69,8 +69,10 @@ class LidarSensor:
         if self.connection is None:
             raise RuntimeError("El sensor no esta conectado.")
         for _ in range(maximum_lines):
-            line = self.connection.readline().decode("utf-8", errors="ignore")
-            parsed = parse_row(line)
+            raw = self.connection.readline()
+            if not raw.endswith(b"\n"):
+                continue  # timeout: linea cortada o vacia; un numero truncado se leeria como una distancia falsa
+            parsed = parse_row(raw.decode("utf-8", errors="ignore"))
             if parsed is not None:
                 row, values = parsed
                 self._latest_matrix[row] = values

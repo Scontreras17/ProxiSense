@@ -2,6 +2,11 @@
 
 El algoritmo cuenta cruces de una zona lateral a la opuesta; no identifica personas.
 La frecuencia de salida depende del sensor y del flujo serie real.
+
+Con un fondo calibrado (`Baseline`) solo cuentan las celdas que estan mas cerca que la habitacion
+vacia; sin fondo se usa unicamente el umbral de distancia, de modo que paredes o muebles dentro del
+umbral cuentan como presencia permanente. Las celdas se agrupan por vecindad y se descartan los
+grupos pequenos (ruido); el cruce se sigue con el centroide del grupo mas grande.
 """
 from __future__ import annotations
 
@@ -10,6 +15,8 @@ from collections import deque
 from dataclasses import dataclass
 
 import numpy as np
+
+from .baseline import Baseline
 
 
 @dataclass
@@ -23,6 +30,35 @@ class CountSnapshot:
     last_direction: str | None = None
 
 
+def largest_group(mask: np.ndarray, min_cells: int = 1) -> tuple[list[tuple[int, int]], int]:
+    """Agrupa celdas activas vecinas (8 direcciones).
+
+    Devuelve (celdas del grupo mas grande, total de celdas en grupos de al menos `min_cells`).
+    """
+    visited = np.zeros(mask.shape, dtype=bool)
+    best: list[tuple[int, int]] = []
+    kept = 0
+    for row, column in zip(*np.nonzero(mask)):
+        if visited[row, column]:
+            continue
+        group, pending = [], [(int(row), int(column))]
+        visited[row, column] = True
+        while pending:
+            r, c = pending.pop()
+            group.append((r, c))
+            for dr in (-1, 0, 1):
+                for dc in (-1, 0, 1):
+                    nr, nc = r + dr, c + dc
+                    if (dr or dc) and 0 <= nr < mask.shape[0] and 0 <= nc < mask.shape[1] and mask[nr, nc] and not visited[nr, nc]:
+                        visited[nr, nc] = True
+                        pending.append((nr, nc))
+        if len(group) >= min_cells:
+            kept += len(group)
+            if len(group) > len(best):
+                best = group
+    return best, kept
+
+
 class DoorwayCounter:
     """Cuenta cruces de izquierda/derecha en una zona de paso, con anti-rebote."""
 
@@ -34,10 +70,14 @@ class DoorwayCounter:
         stable_frames: int = 2,
         cooldown_seconds: float = 1.0,
         release_seconds: float = 0.8,
+        baseline: Baseline | None = None,
+        min_cells: int = 2,
     ) -> None:
         if entry_side not in {"left", "right"}:
             raise ValueError("entry_side debe ser 'left' o 'right'.")
         self.threshold_mm = threshold_mm
+        self.baseline = baseline
+        self.min_cells = max(1, min_cells)
         self.entry_side = entry_side
         self.stable_frames = max(1, stable_frames)
         self.cooldown_seconds = cooldown_seconds
@@ -55,8 +95,11 @@ class DoorwayCounter:
         now = time.monotonic() if now is None else now
         matrix = np.asarray(frame, dtype=float).reshape(8, 8)
         valid = np.isfinite(matrix) & (matrix > 0) & (matrix < 4000) & (matrix <= self.threshold_mm)
-        rows, cols = np.where(valid)
-        self.snapshot.active_cells = int(len(cols))
+        if self.baseline is not None:
+            valid &= self.baseline.foreground(matrix)
+        group, kept_cells = largest_group(valid, self.min_cells)
+        cols = np.array([column for _, column in group], dtype=float)
+        self.snapshot.active_cells = kept_cells
         self._sample_times.append(now)
         if len(self._sample_times) >= 2:
             elapsed = max(self._sample_times[-1] - self._sample_times[0], 1e-6)

@@ -76,6 +76,8 @@ def parser() -> argparse.ArgumentParser:
     count.add_argument("--target-ms", default=10.0, type=float, help="Intervalo objetivo entre muestras (10 ms = 100 Hz).")
     count.add_argument("--server", metavar="URL", help="Servidor AWS; tambien PROXISENSE_SERVER_URL en .env.")
     count.add_argument("--device", metavar="NOMBRE", help="Nombre del dispositivo en el dashboard.")
+    _add_baseline_options(count)
+    count.add_argument("--min-cells", default=2, type=int, help="Celdas minimas conectadas para considerar un objeto (filtra ruido).")
     
     monitor = actions.add_parser("monitor", help="Servicio de presencia con alertas por Telegram.")
     _add_source_options(monitor, nested=True); _add_baseline_options(monitor)
@@ -158,8 +160,13 @@ def main(argv: list[str] | None = None) -> None:
         elif args.action == "count":
             from .people_counter import DoorwayCounter
             from .reporter import Reporter
+            baseline = _resolve_baseline(args)
+            if baseline is None:
+                logging.warning("Sin fondo calibrado: las paredes o muebles dentro de %.0f mm cuentan como presencia. "
+                                "Ejecuta `test-radar calibrate` con la sala vacia.", args.threshold)
             counter = DoorwayCounter(threshold_mm=args.threshold, entry_side=args.entry_side,
-                                     initial_occupancy=args.initial_occupancy)
+                                     initial_occupancy=args.initial_occupancy, baseline=baseline,
+                                     min_cells=args.min_cells)
             reporter = Reporter.from_env(args.server, args.device)
             period = max(0.0, args.target_ms / 1000.0)
             logging.info("Conteo experimental iniciado: objetivo %.1f ms (%.1f Hz), lado de entrada %s.",
